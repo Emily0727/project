@@ -883,7 +883,7 @@
             
             switch(actionNum) {
                 case 1: // Education
-                    gameState.currentImage = `${gameState.cloth}EducatedMan.png`;
+                    gameState.currentImage = `Gacha/${gameState.cloth}EducatedMan.png`;
                     if (gameState.money >= 70) {
                         message = `<div class="status-item">
                             <span class="status-label">Education:</span>
@@ -909,7 +909,7 @@
                         (decision) => {
                             console.log("Decision:", decision);
                             if (decision === 1) { // Property
-                                gameState.currentImage = `${gameState.cloth}PropertyMan.png`;
+                                gameState.currentImage = `Gacha/${gameState.cloth}PropertyMan.png`;
                                 if (gameState.money >= gameState.propWorth) {
                                     gameState.money -= gameState.propWorth;
                                     gameState.property++;
@@ -928,7 +928,7 @@
                                 event();
                                 processTurn(actionNum);
                             } else if(decision === 2) { // Stocks
-                                gameState.currentImage = `${gameState.cloth}StockMan.png`;
+                                gameState.currentImage = `Gacha/${gameState.cloth}StockMan.png`;
                                 console.log("Stock pressed");
                                 showOptionModal(
                                     "Choose stock type:\n\n📈 Stock A: Stable, lower returns\n📊 Stock B: Volatile, higher potential",
@@ -1000,7 +1000,7 @@
                     break;
 
                 case 3: // Sell Out
-                    gameState.currentImage = `${gameState.cloth}SellingMan.png`;
+                    gameState.currentImage = `Gacha/${gameState.cloth}SellingMan.png`;
                     showOptionModal(
                         "Choose asset to sell:",
                         "🏠 Property",
@@ -1075,7 +1075,7 @@
                     return;
                     
                 case 4: // Marriage
-                    gameState.currentImage = `${gameState.cloth}MarriedMan.png`;
+                    gameState.currentImage = `Gacha/${gameState.cloth}MarriedMan.png`;
                     if (!gameState.married) {
                         gameState.money += 50;
                         gameState.livingMoney += 5;
@@ -1094,7 +1094,7 @@
                     break;
                     
                 case 5: // Employment
-                    gameState.currentImage = `${gameState.cloth}WorkingMan.png`;
+                    gameState.currentImage = `Gacha/${gameState.cloth}WorkingMan.png`;
                     const job = Math.floor(Math.random() * 9) + 1;
                     if (job <= gameState.luckyness) {
                         gameState.income = job * (2 + gameState.education);
@@ -1109,7 +1109,7 @@
                     break;
                     
                 case 6: // Gamble
-                    gameState.currentImage = `${gameState.cloth}GambleMan.png`;
+                    gameState.currentImage = `Gacha/${gameState.cloth}GambleMan.png`;
                     showInputModal(
                         "Enter amount to gamble:",
                         (gambleAmount) => {
@@ -1179,7 +1179,7 @@
                         }
                         
                         gameState.clothWorth *= 2;
-                        gameState.currentImage = `${gameState.cloth}NormalMan.png`;
+                        gameState.currentImage = `Gacha/${gameState.cloth}NormalMan.png`;
                     } else {
                         message = "<div class='status-item'><span class='status-value red'>Insufficient funds for clothing!</span></div>";
                     }
@@ -1187,7 +1187,7 @@
                     break;
                     
                 case 8: // Skip
-                    gameState.currentImage = `${gameState.cloth}NormalMan.png`;
+                    gameState.currentImage = `Gacha/${gameState.cloth}NormalMan.png`;
                     console.log("Skip!");
                     message = "<div class='status-item'><span class='status-value'>⏭️ Time passes without changes...</span></div>";
                     break;
