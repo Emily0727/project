@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Gacha</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('clawMachine.gif');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -2;
+        }
+
+        .background::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+
+        section {
+            width: 100%;
+            height: auto;
+            flex-direction: row;
+            align-items: left;
+        }
+
+        .custom-button {
+            height: 10vh;
+            width: auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1vw;
+            padding: 4vh 4vw;
+            background-color: #b53122;
+            color: white;
+            border-radius: 2vh;
+            font-size: 4vh;
+            font-family: var(--main-font);
+            cursor: pointer;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+            border: 2px solid #f6eaeb;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .findFiveB {
+            background:#e23e2c;
+        }
+
+        .icon-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5vw;
+        }
+
+        .icon {
+            width: 5vh;
+            height: 5vh;
+        }
+
+        .divider {
+            width: 1px;
+            height: 400%;
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        #total-display {
+            color: white;
+            font-family: var(--main-font);
+            font-size: 24px; 
+            margin: 20px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        #total-raccoons {
+            font-weight: bold;
+            color: #ffcc00;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            align-items: center;
+            margin-top: 30px;
+        }
+
+        .menu-button {
+            padding: 10px 20px;
+            background-color: #d43a28;
+            color: white;
+            border: none;
+            border-radius: 2vh;
+            font-family: var(--main-font);
+            font-weight: 600;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 20px;
+            border: 2px solid #f6eaeb;
+        }
+    </style>
+  </head>
+
+  <body>
+    <div class="background"></div>
+
+    <section>
+        <button id="menuB" class="menu-button">
+            Menu
+        </button>
+        <div id="total-display">
+            <span>Total Raccoons:</span>
+            <span id="total-raccoons">0</span>
+            <img src="icon.png" alt="icon" style="width: 30px; height: 30px;">
+        </div>
+    </section>
+
+    <section class="button-container">
+        <button class="custom-button" id="findOneButton">
+            <span class="icon-label">
+                <img src="icon.png" alt="icon" class="icon" />
+                x10
+            </span>
+            <span class="divider"></span>
+            <span class="button-text">Find 1 Employee</span>
+        </button>
+        <button class="custom-button findFiveB" id="findFiveButton">
+            <span class="icon-label">
+                <img src="icon.png" alt="icon" class="icon" />
+                x50
+            </span>
+            <span class="divider"></span>
+            <span class="button-text">Find 5 Employees!!!</span>
+        </button>
+    </section>
+
+    <script type="module">
+        var totalRaccoons = parseInt(localStorage.getItem('totalRaccoonsCaught')) || 0;
+        // totalRaccoons = 92837982379478394;
+        
+        function updateDisplay() {
+            document.getElementById('total-raccoons').textContent = totalRaccoons;
+        }
+        
+        updateDisplay();
+        
+        document.getElementById('menuB').addEventListener('click', () => {
+            window.location.href = './index.html';
+        });
+        
+        document.getElementById('findOneButton').addEventListener('click', () => {
+            if (totalRaccoons >= 10) {
+                totalRaccoons -= 10;
+                localStorage.setItem('totalRaccoonsCaught', totalRaccoons);
+                updateDisplay();
+                window.location.href = './gachaAnimationOne.html';
+            } else {
+                alert("Not enough raccoons! You need 10 to find 1 employee.");
+            }
+        });
+        
+        document.getElementById('findFiveButton').addEventListener('click', () => {
+            if (totalRaccoons >= 50) {
+                totalRaccoons -= 50;
+                localStorage.setItem('totalRaccoonsCaught', totalRaccoons);
+                updateDisplay();
+                window.location.href = './gachaAnimationFive.html';
+            } else {
+                alert("Not enough raccoons! You need 50 to find 5 employees.");
+            }
+        });
+    </script>
+  </body>
+</html>

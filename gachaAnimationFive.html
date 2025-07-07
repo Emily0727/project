@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gacha Reveal</title>
+  <style>
+    body {
+        background-color: #111;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        color: white;
+        font-family: var(--main-font);
+        user-select: none;
+    }
+
+    body.reveal-mode {
+        cursor: pointer;
+    }
+
+    #image {
+        width: 75vh;
+        height: 75vh;
+        object-fit: contain;
+        position: relative;
+        z-index: 1;
+        /* transform: scale(2);
+        transform-origin: center;
+        transition: transform 0.3s ease-in-out; */
+    }
+
+    .wrapper {
+      position: relative;
+      display: inline-block; /* shrink-wrap to image size */
+    }
+
+    .items {
+      width: 18vh;
+      height: 18vh;
+      object-fit: contain;
+      position: absolute;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+      display: none;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+    }
+
+    #item1 {
+      top: 54%;
+      left: 28%;
+    }
+
+    #item2 {
+      top: 60%;
+      left: 40%;
+    }
+
+    #item3 {
+      top: 65%;
+      left: 53%;
+    }
+
+    #item4 {
+      top: 60%;
+      left: 66%;
+    }
+
+    #item5 {
+      top: 54%;
+      left: 78%;
+    }
+
+    .numbers {
+      font-family: var(--main-font);
+      font-weight: 300;
+      width: 18vh;
+      height: 18vh;
+      text-align: center;
+      font-size: 5vh;
+      position: absolute;
+      transform: translate(-50%, -50%);
+      z-index: 4;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.8));
+    }
+
+    #number1 {
+      top: 54%;
+      left: 28%;
+    }
+
+    #number2 {
+      top: 60%;
+      left: 40%;
+    }
+
+    #number3 {
+      top: 65%;
+      left: 53%;
+    }
+
+    #number4 {
+      top: 60%;
+      left: 66%;
+    }
+
+    #number5 {
+      top: 54%;
+      left: 78%;
+    }
+
+    #message {
+        position: absolute;
+        z-index: 2;
+        top: 2vh;
+        margin-top: 20px;
+        font-family: var(--main-font);
+        font-weight: 800;
+        font-size: 10vw;
+        display: none;
+        cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <img id="image" src="./Gacha/1.png" alt="gacha">
+    <img id="item1" src="./trash.png" alt="gacha" class="items">
+    <div id="number1" class="numbers">0</div>
+    <img id="item2" src="./trash.png" alt="gacha" class="items">
+    <div id="number2" class="numbers">0</div>
+    <img id="item3" src="./trash.png" alt="gacha" class="items">
+    <div id="number3" class="numbers">0</div>
+    <img id="item4" src="./trash.png" alt="gacha" class="items">
+    <div id="number4" class="numbers">0</div>
+    <img id="item5" src="./trash.png" alt="gacha" class="items">
+    <div id="number5" class="numbers">0</div>
+  </div>
+  <div id="message">Click to Reveal!</div>
+
+  <script type="module">
+
+      import {pullFive} from "./gachaLogic.js?v1.2";
+      let pullResult = pullFive();
+
+      console.log(pullResult);
+
+      const walkSound = new Audio('walkingSound.mp3');
+      const hiSound = new Audio('Hai.mp3');
+      const hereYouGoSound = new Audio('HereYouGo.mp3');
+      const baiSound = new Audio('Bai.mp3');
+
+      //animation logic
+
+      const img = document.getElementById("image");
+      const message = document.getElementById("message");
+      const item1 = document.getElementById("item1");
+      const item2 = document.getElementById("item2");
+      const item3 = document.getElementById("item3");
+      const item4 = document.getElementById("item4");
+      const item5 = document.getElementById("item5");
+
+      const number1 = document.getElementById("number1");
+      const number2 = document.getElementById("number2");
+      const number3 = document.getElementById("number3");
+      const number4 = document.getElementById("number4");
+      const number5 = document.getElementById("number5");
+
+      const frames = [
+        "./Gacha/1.png",
+        "./Gacha/2.png",
+        "./Gacha/3.png",
+        "./Gacha/4.png",
+        "./Gacha/5.png",
+        "./Gacha/602.png",
+        "./Gacha/7.png",
+        "./Gacha/8.png",
+        "./Gacha/9.png",
+        "./Gacha/10.png"
+      ];
+
+      let step = 0;
+      let clickCount = 0;
+      walkSound.cloneNode().play();
+
+      //cycle through 4 images, then stop on the 5th
+      const interval = setInterval(() => {
+        img.src = frames[step];
+        step++;
+
+        if (step === 5) {
+          hiSound.cloneNode().play();
+          clearInterval(interval);
+          message.style.display = "block";
+          document.body.classList.add("reveal-mode");
+        }
+      }, 300);
+
+      //click interaction
+      document.addEventListener("click", () => {
+        if (step>4) {
+          clickCount++;
+
+          if (clickCount === 1) {
+
+            hereYouGoSound.cloneNode().play();
+
+            //LOGIC FOR OBJECTS PULLED
+
+            const parts = pullResult.split('.');
+
+            for (let i = 0; i < parts.length; i++) {
+              const item = document.getElementById(`item${i + 1}`); // item1 to item5
+              const number = document.getElementById(`number${i + 1}`); // item1 to item5
+              const value = parts[i];
+
+              if (!item) continue; // skip if element doesn't exist
+
+              // Check if the value is a number
+              if (!isNaN(Number(value))) {
+                item.src = "icon.png";
+                number.textContent = value;
+                number.style.display = "flex";
+
+                //saving
+
+                let raccoonNum = parseInt(localStorage.getItem('totalRaccoonsCaught'));
+                localStorage.setItem('totalRaccoonsCaught', (raccoonNum + parseInt(value)));
+              } else if (value !== "trash") {
+                item.src = `${value}.png`;
+
+                //saving
+
+                let employeeNum = localStorage.getItem(`${value}Count`);
+                console.log("previous number: " + employeeNum);
+                if (isNaN(Number(employeeNum))) {
+                  localStorage.setItem(`${value}Count`, "1");
+                } else {
+                  const newCount = Number(employeeNum) + 1;
+                  localStorage.setItem(`${value}Count`, newCount.toString());
+                }
+                console.log("current number: " + localStorage.getItem(`${value}Count`));
+
+              }
+            }
+
+            item1.style.display = "block";
+            item2.style.display = "block";
+            item3.style.display = "block";
+            item4.style.display = "block";
+            item5.style.display = "block";
+
+            //END LOGIC FOR OBJECTS PULLED
+
+            img.src = frames[5];
+            message.textContent = "Click to Continue";
+          } else if (clickCount === 2) {
+            baiSound.cloneNode().play();
+            walkSound.cloneNode().play();
+            document.body.classList.remove("reveal-mode");
+            //images 6 to 10
+            let revealIndex = 6;
+            img.src = frames[revealIndex];
+            message.style.display = "none";
+            item1.style.display = "none";
+            item2.style.display = "none";
+            item3.style.display = "none";
+            item4.style.display = "none";
+            item5.style.display = "none";
+
+            number1.style.display = "none";
+            number2.style.display = "none";
+            number3.style.display = "none";
+            number4.style.display = "none";
+            number5.style.display = "none";
+
+            const revealInterval = setInterval(() => {
+            revealIndex++;
+
+            if (revealIndex > 9) {
+                clearInterval(revealInterval);
+                setTimeout(() => {
+                  window.location.href = "./gachaScreen.html";
+                }, 100);
+            } else {
+              img.src = frames[revealIndex];
+            }
+            }, 300);
+          }
+        }
+      });
+
+      //animation logic end
+
+  </script>
+</body>
+</html>

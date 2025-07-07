@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donut Defender</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--main-font);
+            overflow: hidden;
+            user-select: none;
+        }
+        
+        audio { display:none;}
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('counter3.jpg');
+            background-size: cover;
+        }
+
+        .background::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+        
+        #lives-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-wrap: wrap;
+            width: 180px;
+            justify-content: center;
+        }
+        
+        .donut {
+            width: 60px;
+            height: 60px;
+            margin: 15px;
+            transition: all 0.3s;
+            background-image: url('FOOD.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        
+        .raccoon {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            transition: transform 0.1s;
+            background-image: url('rac-left2.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 10;
+        }
+        
+        
+        .raccoon:hover {
+            transform: scale(1.2);
+        }
+        
+        .employee {
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            cursor: move;
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 10;
+        }
+        
+        .employee-type1 {
+            background-image: url('employee1.png');
+        }
+        
+        .employee-type2 {
+            background-image: url('employee2.png');
+        }
+        
+        .employee-type3 {
+            background-image: url('employee3.png');
+        }
+        
+        .bullet {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background-image: url('bullet.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 5;
+        }
+        
+        .trash {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background-image: url('trash.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: 5;
+        }
+        
+        .health-bar-container {
+            position: absolute;
+            width: 90px;
+            height: 8px;
+            top: -12px;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+        
+        .health-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.2s;
+        }
+        
+        .raccoon-health {
+            background-color: #ff6b6b;
+        }
+        
+        .employee-health {
+            background-color: #4CAF50;
+        }
+        
+        #employee-menu {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+            z-index: 20;
+        }
+        
+        .menu-employee {
+            width: 60px;
+            height: 60px;
+            cursor: grab;
+            padding: 5px;
+            border-radius: 5px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            position: relative;
+        }
+        
+        .employee-count-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .menu-employee:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        .menu-employee-type1 {
+            background-image: url('employee1.png');
+        }
+        
+        .menu-employee-type2 {
+            background-image: url('employee2.png');
+        }
+        
+        .menu-employee-type3 {
+            background-image: url('employee3.png');
+        }
+        
+        #score-display {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        #final-score {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 32px;
+        }
+
+        #final-score .raccoon-icon {
+            vertical-align: middle;
+            margin: 0 8px;
+        }
+        
+        .raccoon-icon {
+            width: 60px;
+            height: 60px;
+            background-image: url('icon.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+        
+        #difficulty-display {
+            position: absolute;
+            top: 90px;
+            right: 30px;
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffcc00;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            z-index: 20;
+        }
+        
+        #pause-btn {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 30;
+            padding: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #pause-btn img {
+            width: 50px;
+            height: 50px;
+        }
+        
+        #game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 48px;
+            z-index: 100;
+            text-align: center;
+        }
+        
+        #restart-btn {
+            /* margin: 3%;
+            margin-top: 30px; */
+            padding: 15px 30px;
+            font-size: 28px;
+            background-color: #e74c3c;
+            border: none;
+            border-radius: 2vh;
+            cursor: pointer;
+            color: white;
+            border: 4px solid #f6eaeb;
+            width: 250px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .placement-indicator {
+            position: absolute;
+            width: 90px;
+            height: 90px;
+            border: 3px dashed rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            display: none;
+        }
+        
+        #placement-top {
+            top: calc(50% - 150px);
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        #placement-bottom {
+            top: calc(50% + 150px);
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        #placement-left {
+            top: 50%;
+            left: calc(50% - 150px);
+            transform: translate(-50%, -50%);
+        }
+        
+        #placement-right {
+            top: 50%;
+            left: calc(50% + 150px);
+            transform: translate(-50%, -50%);
+        }
+        
+        .placement-indicator.available {
+            display: block;
+            border-color: rgba(100, 255, 100, 0.8);
+            background-color: rgba(100, 255, 100, 0.2);
+        }
+        
+        .placement-indicator.taken {
+            display: block;
+            border-color: rgba(255, 100, 100, 0.5);
+            background-color: rgba(255, 100, 100, 0.1);
+        }
+
+        p {
+            align-self: center;
+        }
+
+        #pause-menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            z-index: 200;
+            text-align: center;
+        }
+        
+        #pause-menu h2 {
+            font-size: 64px;
+            margin-bottom: 40px;
+        }
+        
+        .menu-option {
+            margin: 15px;
+            padding: 20px 40px;
+            font-size: 32px;
+            background-color: #e74c3c;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            border: 4px solid #f6eaeb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 25%;
+            min-width: 250px;
+            text-align: center;
+        }
+        
+        #menuBEnd {
+            margin: 3%;
+            margin-top: 30px;
+            padding: 15px 30px;
+            font-size: 28px;
+            background-color: #e74c3c;
+            border: none;
+            border-radius: 2vh;
+            cursor: pointer;
+            color: white;
+            border: 4px solid #f6eaeb;
+            width: 250px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #pausingButton {
+            filter: invert(34%) sepia(97%) saturate(656%) hue-rotate(340deg) brightness(94%) contrast(94%);
+        }
+    </style>
+</head>
+<body>
+    <audio loop autoplay id="audioplayer">
+        <source src="Background_music.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <div id="game-container">
+        <button id="pause-btn">
+            <img src="PauseButton.png" alt="Pause" id="pausingButton">
+        </button>
+        
+        <div id="pause-menu">
+            <h2>Game Paused</h2>
+            <button id="resume-btn" class="menu-option">Resume Game</button>
+            <button id="menu-btn" class="menu-option">Back to Menu</button>
+        </div>
+        
+        <div id="placement-top" class="placement-indicator"></div>
+        <div id="placement-bottom" class="placement-indicator"></div>
+        <div id="placement-left" class="placement-indicator"></div>
+        <div id="placement-right" class="placement-indicator"></div>
+        
+        <div id="score-display">
+            <span id="raccoons-caught">0</span>
+            <div class="raccoon-icon"></div>
+            <span>Caught</span>
+        </div>
+        
+        <div id="difficulty-display">Difficulty: 1</div>
+        
+        <div id="lives-container">
+            <div class="donut"></div>
+            <div class="donut"></div>
+            <div class="donut"></div>
+            <div class="donut"></div>
+        </div>
+        
+        <div id="employee-menu">
+            <div class="menu-employee menu-employee-type1" draggable="true" data-type="1">
+                <div class="employee-count-badge" id="employee1-count">0</div>
+            </div>
+            <div class="menu-employee menu-employee-type2" draggable="true" data-type="2">
+                <div class="employee-count-badge" id="employee2-count">0</div>
+            </div>
+            <div class="menu-employee menu-employee-type3" draggable="true" data-type="3">
+                <div class="employee-count-badge" id="employee3-count">0</div>
+            </div>
+        </div>
+        
+        <div id="game-over">
+            <h1>Game Over!</h1>
+            <p id="final-score">
+                <span id="final-raccoons">0</span>
+                <span class="raccoon-icon" style="display: inline-block; width: 40px; height: 40px;"></span>
+                <span>Raccoons Caught</span>
+            </p>
+            <button id="restart-btn">Play Again</button>
+            <button id="menuBEnd" class="menu-button">Menu</button>
+        </div>
+    </div>
+
+    <script>
+        let totalRaccoonsCaught = parseInt(localStorage.getItem('totalRaccoonsCaught')) || 0;
+        const audio = document.getElementById("audioplayer");
+
+        if (localStorage.getItem("employee1Count") === null || parseInt(localStorage.getItem("employee1Count")) === 0) {
+            localStorage.setItem("employee1Count", '4');
+        }
+        
+        document.getElementById('menuBEnd').addEventListener('click', () => {
+            window.location.href = './index.html';
+        });
+
+        const gameState = {
+            lives: 4,
+            score: 0,
+            difficulty: 1,
+            raccoonSpeed: 1.5,
+            raccoonSpawnRate: 1200,
+            raccoonsPerSpawn: 1.5,
+            employees: [],
+            raccoons: [],
+            bullets: [],
+            trash: [],
+            gameActive: true,
+            lastSpawnTime: 0,
+            difficultyIncreaseScore: 30,
+            nextDifficultyIncrease: 30,
+            isPaused: false,
+            employeeCounts: {
+                type1: parseInt(localStorage.getItem('employee1Count')) || 0,
+                type2: parseInt(localStorage.getItem('employee2Count')) || 0,
+                type3: parseInt(localStorage.getItem('employee3Count')) || 0
+            }
+        };
+
+        localStorage.setItem('employee1CountGame', gameState.employeeCounts.type1);
+        localStorage.setItem('employee2CountGame', gameState.employeeCounts.type2);
+        localStorage.setItem('employee3CountGame', gameState.employeeCounts.type3);
+
+        const employeeTypes = {
+            1: {
+                damage: 1,
+                health: 4,
+                fireRate: 1500,
+                speed: 2,
+                class: 'employee-type1',
+                attackCooldown: 150
+            },
+            2: {
+                damage: 1,
+                health: 5,
+                fireRate: 1000,
+                speed: 3,
+                class: 'employee-type2',
+                attackCooldown: 120
+            },
+            3: {
+                damage: 1,
+                health: 6,
+                fireRate: 500,
+                speed: 4,
+                class: 'employee-type3',
+                attackCooldown: 100
+            }
+        };
+
+        const gameContainer = document.getElementById('game-container');
+        const livesContainer = document.getElementById('lives-container');
+        const donuts = document.querySelectorAll('.donut');
+        const scoreDisplay = document.getElementById('score-display');
+        const difficultyDisplay = document.getElementById('difficulty-display');
+        const gameOverScreen = document.getElementById('game-over');
+        const finalScoreDisplay = document.getElementById('final-raccoons');
+        const restartBtn = document.getElementById('restart-btn');
+        const menuEmployees = document.querySelectorAll('.menu-employee');
+        const placementIndicators = {
+            top: document.getElementById('placement-top'),
+            bottom: document.getElementById('placement-bottom'),
+            left: document.getElementById('placement-left'),
+            right: document.getElementById('placement-right')
+        };
+
+        const pauseBtn = document.getElementById('pause-btn');
+        const pauseMenu = document.getElementById('pause-menu');
+        const resumeBtn = document.getElementById('resume-btn');
+        const menuBtn = document.getElementById('menu-btn');
+
+        const containerRect = gameContainer.getBoundingClientRect();
+
+        const attackSound = new Audio('AttackSE.mp3');
+        const attackSound2 = new Audio('attackSE2.mp3');
+        const donutGoneSound = new Audio('donut_goneSE.mp3');
+        const gameOverSound = new Audio('GameOverSE.mp3');
+
+        function getEmployeePositions() {
+            return {
+                    top: {
+                    x: placementIndicators.top.getBoundingClientRect().left - containerRect.left,
+                    y: placementIndicators.top.getBoundingClientRect().top - containerRect.top,
+                    rotation: 0
+                },
+                bottom: {
+                    x: placementIndicators.bottom.getBoundingClientRect().left - containerRect.left,
+                    y: placementIndicators.bottom.getBoundingClientRect().top - containerRect.top,
+                    rotation: 180
+                },
+                left: {
+                    x: placementIndicators.left.getBoundingClientRect().left - containerRect.left,
+                    y: placementIndicators.left.getBoundingClientRect().top - containerRect.top,
+                    rotation: 270
+                },
+                right: {
+                    x: placementIndicators.right.getBoundingClientRect().left - containerRect.left,
+                    y: placementIndicators.right.getBoundingClientRect().top - containerRect.top,
+                    rotation: 90
+                }
+            }
+        }
+
+        const employeePositions = getEmployeePositions();
+
+        function updateEmployeeDisplays() {
+            const counts = {
+                type1: parseInt(localStorage.getItem('employee1CountGame')) || 0,
+                type2: parseInt(localStorage.getItem('employee2CountGame')) || 0,
+                type3: parseInt(localStorage.getItem('employee3CountGame')) || 0
+            };
+
+            const types = [1, 2, 3];
+            
+            types.forEach(type => {
+                const employee = document.querySelector(`.menu-employee-type${type}`);
+                const countBadge = document.getElementById(`employee${type}-count`);
+                const count = counts[`type${type}`];
+                
+                countBadge.textContent = count;
+                employee.draggable = count > 0;
+                
+                if (count <= 0) {
+                    employee.style.opacity = '0.5';
+                    employee.style.filter = 'grayscale(70%)';
+                    employee.style.cursor = 'not-allowed';
+                } else {
+                    employee.style.opacity = '1';
+                    employee.style.filter = 'none';
+                    employee.style.cursor = 'grab';
+                }
+            });
+        }
+
+        function initGame() {
+            
+            gameState.lives = 4;
+            gameState.score = 0;
+            gameState.difficulty = 1;
+            gameState.raccoonSpeed = 1.5;
+            gameState.raccoonSpawnRate = 1200;
+            gameState.raccoonsPerSpawn = 1.5;
+            gameState.employees = [];
+            gameState.raccoons = [];
+            gameState.bullets = [];
+            gameState.trash = [];
+            gameState.gameActive = true;
+            gameState.isPaused = false;
+            gameState.lastSpawnTime = 0;
+            gameState.nextDifficultyIncrease = 30;
+
+            donuts.forEach(donut => {
+                donut.style.display = 'block';
+                donut.style.opacity = '1';
+                donut.style.transform = 'scale(1)';
+            });
+
+            document.querySelectorAll('.raccoon, .employee, .bullet, .trash').forEach(el => el.remove());
+
+            gameOverScreen.style.display = 'none';
+            pauseMenu.style.display = 'none';
+            document.getElementById('raccoons-caught').textContent = '0';
+            difficultyDisplay.textContent = `Difficulty: 1`;
+
+            updateEmployeeDisplays();
+            updatePlacementIndicators();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updatePlacementIndicators() {
+            Object.values(placementIndicators).forEach(indicator => {
+                indicator.className = 'placement-indicator';
+            });
+
+            for (const [side, pos] of Object.entries(employeePositions)) {
+                const taken = gameState.employees.some(emp => emp.side === side);
+                if (!taken) {
+                    placementIndicators[side].classList.add('available');
+                } else {
+                    placementIndicators[side].classList.add('taken');
+                }
+            }
+        }
+
+        function gameLoop(timestamp) {
+            if (!gameState.gameActive || gameState.isPaused) return;
+
+            if (gameState.score >= gameState.nextDifficultyIncrease) {
+                increaseDifficulty();
+            }
+
+            if (timestamp - gameState.lastSpawnTime > gameState.raccoonSpawnRate) {
+                for (let i = 0; i < Math.max(1, Math.floor(gameState.raccoonsPerSpawn)); i++) {
+                    spawnRaccoon();
+                }
+                gameState.lastSpawnTime = timestamp;
+            }
+
+            moveRaccoons();
+            moveProjectiles();
+            handleEmployeeAttacks();
+            checkCollisions();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function togglePause() {
+            gameState.isPaused = !gameState.isPaused;
+            
+            if (gameState.isPaused) {
+                pauseMenu.style.display = 'flex';
+            } else {
+                pauseMenu.style.display = 'none';
+                if (gameState.gameActive) {
+                    requestAnimationFrame(gameLoop);
+                }
+            }
+        }
+
+        function returnToMenu() {
+            if (confirm("Are you sure you want to return to the menu? Your current game progress will not be saved (you will still get the raccoons you catched).")) {
+                window.location.href = './index.html';
+            } else {
+                togglePause();
+            }
+        }
+
+        function increaseDifficulty() {
+            gameState.difficulty++;
+            gameState.nextDifficultyIncrease += 20;
+
+            gameState.raccoonSpeed = Math.min(5, 1 + (gameState.difficulty * 0.3));
+            gameState.raccoonSpawnRate = Math.max(400, 1600 - (gameState.difficulty * 150));
+            gameState.raccoonsPerSpawn = Math.min(6, 1 + Math.floor(gameState.difficulty / 2));
+
+            difficultyDisplay.textContent = `Difficulty: ${gameState.difficulty}`;
+            difficultyDisplay.style.color = getDifficultyColor(gameState.difficulty);
+            difficultyDisplay.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                difficultyDisplay.style.transform = 'scale(1)';
+            }, 300);
+        }
+
+        function getDifficultyColor(difficulty) {
+            if (difficulty < 3) return '#4CAF50';
+            if (difficulty < 6) return '#FFC107';
+            if (difficulty < 9) return '#FF9800';
+            return '#F44336';
+        }
+
+        function spawnRaccoon() {
+            const raccoon = document.createElement('div');
+            raccoon.className = 'raccoon';
+            
+            const healthBarContainer = document.createElement('div');
+            healthBarContainer.className = 'health-bar-container';
+            
+            const healthBar = document.createElement('div');
+            healthBar.className = 'health-bar raccoon-health';
+            healthBar.style.width = '100%';
+            
+            healthBarContainer.appendChild(healthBar);
+            raccoon.appendChild(healthBarContainer);
+            
+            const side = Math.floor(Math.random() * 4);
+            let x, y;
+            
+            let img = 'rac-left2.png'; 
+    
+            switch (side) {
+                case 0: // Top
+                    x = Math.random() * window.innerWidth;
+                    y = -50;
+                    img = 'rac-left2.png';
+                    break;
+                case 1: // Right
+                    x = window.innerWidth + 50;
+                    y = Math.random() * window.innerHeight;
+                    img = 'rac-right2.png'; 
+                    break;
+                case 2: // Bottom
+                    x = Math.random() * window.innerWidth;
+                    y = window.innerHeight + 50;
+                    img = 'rac-right2.png';
+                    break;
+                case 3: // Left
+                    x = -50;
+                    y = Math.random() * window.innerHeight;
+                    img = 'rac-left2.png'; 
+                    break;
+            }
+            
+            raccoon.style.backgroundImage = `url('${img}')`;
+            
+            raccoon.style.left = `${x}px`;
+            raccoon.style.top = `${y}px`;
+            gameContainer.appendChild(raccoon);
+
+         
+                gameState.raccoons.push({
+                element: raccoon,
+                healthBar: healthBar,
+                x: x,
+                y: y,
+                health: 2,
+                maxHealth: 2,
+                side: side,
+                trashCooldown: 0
+                });
+            
+            
+            
+            
+            raccoon.addEventListener('click', () => {
+                if (!gameState.gameActive || gameState.isPaused) return;
+                
+                raccoon.remove();
+                gameState.raccoons = gameState.raccoons.filter(r => r.element !== raccoon);
+
+                let rand = Math.floor(Math.random()*2);
+
+                if (rand){
+                    attackSound.cloneNode().play();
+                }
+                else {
+                    attackSound2.cloneNode().play();
+                }
+
+                
+                
+                gameState.score += 1;
+                totalRaccoonsCaught += 1;
+                localStorage.setItem('totalRaccoonsCaught', totalRaccoonsCaught);
+                document.getElementById('raccoons-caught').textContent = gameState.score;
+            });
+        }
+
+        function moveRaccoons() {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            gameState.raccoons.forEach(raccoon => {
+                const dx = centerX - raccoon.x;
+                const dy = centerY - raccoon.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                const vx = (dx / distance) * gameState.raccoonSpeed;
+                const vy = (dy / distance) * gameState.raccoonSpeed;
+                
+                raccoon.x += vx;
+                raccoon.y += vy;
+                
+                raccoon.element.style.left = `${raccoon.x}px`;
+                raccoon.element.style.top = `${raccoon.y}px`;
+                
+                if (distance < 40) {
+                    raccoonReachedCenter(raccoon);
+                }
+                
+                if (raccoon.trashCooldown <= 0) {
+                    checkRaccoonAttacks(raccoon);
+                } else {
+                    raccoon.trashCooldown--;
+                }
+            });
+        }
+
+        function raccoonReachedCenter(raccoon) {
+            raccoon.element.remove();
+            gameState.raccoons = gameState.raccoons.filter(r => r !== raccoon);
+            
+            gameState.lives--;
+            
+            if (gameState.lives >= 0) {
+                donuts[gameState.lives].style.transform = 'scale(0)';
+                donuts[gameState.lives].style.opacity = '0';
+                donutGoneSound.cloneNode().play();
+            }
+            
+            if (gameState.lives <= 0) {
+                endGame();
+                audio.pause();
+            }
+        }
+
+        function checkRaccoonAttacks(raccoon) {
+            let blockingEmployee = null;
+            
+            gameState.employees.forEach(employee => {
+                const dx = raccoon.x - employee.x;
+                const dy = raccoon.y - employee.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 150) {
+                    blockingEmployee = employee;
+                }
+            });
+            
+            if (blockingEmployee) {
+                throwTrash(raccoon, blockingEmployee);
+                raccoon.trashCooldown = 120;
+            }
+        }
+
+        function throwTrash(raccoon, employee) {
+            const trash = document.createElement('div');
+            trash.className = 'trash';
+            trash.style.left = `${raccoon.x}px`;
+            trash.style.top = `${raccoon.y}px`;
+            gameContainer.appendChild(trash);
+            
+            gameState.trash.push({
+                element: trash,
+                x: raccoon.x,
+                y: raccoon.y,
+                target: employee,
+                speed: 3
+            });
+        }
+
+        function handleEmployeeAttacks() {
+            gameState.employees.forEach(employee => {
+                if (employee.attackCooldown <= 0) {
+                    const rect = employee.element.getBoundingClientRect();
+                    employee.x = rect.left + rect.width / 2;
+                    employee.y = rect.top + rect.height / 2;
+
+                    let targetRaccoon = null;
+                    let minDistance = Infinity;
+                    
+                    gameState.raccoons.forEach(raccoon => {
+                        const dx = raccoon.x - employee.x;
+                        const dy = raccoon.y - employee.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < minDistance && distance < 300) {
+                            minDistance = distance;
+                            targetRaccoon = raccoon;
+                        }
+                    });
+                    
+                    if (targetRaccoon) {
+                        throwBullet(employee, targetRaccoon);
+                        employee.attackCooldown = employeeTypes[employee.type].attackCooldown;
+                    }
+                } else {
+                    employee.attackCooldown--;
+                }
+            });
+        }
+
+        function throwBullet(employee, targetRaccoon) {
+            const bullet = document.createElement('div');
+            bullet.className = 'bullet';
+            bullet.style.left = `${employee.x}px`;
+            bullet.style.top = `${employee.y}px`;
+            gameContainer.appendChild(bullet);
+            
+            gameState.bullets.push({
+                element: bullet,
+                x: employee.x,
+                y: employee.y,
+                target: targetRaccoon,
+                speed: employeeTypes[employee.type].speed,
+                damage: employeeTypes[employee.type].damage
+            });
+        }
+
+        function moveProjectiles() {
+            gameState.bullets.forEach((bullet, index) => {
+                const dx = bullet.target.x - bullet.x;
+                const dy = bullet.target.y - bullet.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 5) {
+                    bullet.element.remove();
+                    gameState.bullets.splice(index, 1);
+                    
+                    bullet.target.health -= bullet.damage;
+                    
+                    const healthPercent = (bullet.target.health / bullet.target.maxHealth) * 100;
+                    bullet.target.healthBar.style.width = `${healthPercent}%`;
+                    
+                    if (bullet.target.health <= 0) {
+                        bullet.target.element.remove();
+                        gameState.raccoons = gameState.raccoons.filter(r => r !== bullet.target);
+                        gameState.score += 1;
+                        totalRaccoonsCaught += 1;
+                        localStorage.setItem('totalRaccoonsCaught', totalRaccoonsCaught);
+                        document.getElementById('raccoons-caught').textContent = gameState.score;
+                    }
+                } else {
+                    const vx = (dx / distance) * bullet.speed;
+                    const vy = (dy / distance) * bullet.speed;
+                    
+                    bullet.x += vx;
+                    bullet.y += vy;
+                    
+                    bullet.element.style.left = `${bullet.x}px`;
+                    bullet.element.style.top = `${bullet.y}px`;
+                }
+            });
+
+            gameState.trash.forEach((trash, index) => {
+                const dx = trash.target.x - trash.x;
+                const dy = trash.target.y - trash.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 5) {
+                    trash.element.remove();
+                    gameState.trash.splice(index, 1);
+                    
+                    trash.target.health--;
+                    
+                    const healthPercent = (trash.target.health / trash.target.maxHealth) * 100;
+                    trash.target.healthBar.style.width = `${healthPercent}%`;
+                    
+                    if (trash.target.health <= 0) {
+                        trash.target.element.remove();
+                        gameState.employees = gameState.employees.filter(e => e !== trash.target);
+                        updatePlacementIndicators();
+                    }
+                } else {
+                    const vx = (dx / distance) * trash.speed;
+                    const vy = (dy / distance) * trash.speed;
+                    
+                    trash.x += vx;
+                    trash.y += vy;
+                    
+                    trash.element.style.left = `${trash.x}px`;
+                    trash.element.style.top = `${trash.y}px`;
+                }
+            });
+        }
+
+        function checkCollisions() {}
+
+        function endGame() {
+            gameState.gameActive = false;
+            finalScoreDisplay.textContent = gameState.score;
+            gameOverScreen.style.display = 'flex';
+
+            gameOverSound.cloneNode().play();
+        }
+
+        menuEmployees.forEach(menuEmployee => {
+            menuEmployee.addEventListener('dragstart', e => {
+                const type = e.target.dataset.type;
+                if (gameState.employeeCounts[`type${type}`] <= 0) {
+                    e.preventDefault();
+                    return;
+                }
+                e.dataTransfer.setData('text/plain', type);
+            });
+        });
+
+        gameContainer.addEventListener('dragover', e => {
+            e.preventDefault();
+            
+            let closestSide = null;
+            let minDistance = Infinity;
+            
+            for (const [side, pos] of Object.entries(employeePositions)) {
+                const taken = gameState.employees.some(emp => emp.side === side);
+                if (taken) continue;
+                
+                const distance = Math.sqrt(
+                    Math.pow(e.clientX - pos.x, 2) + 
+                    Math.pow(e.clientY - pos.y, 2)
+                );
+                
+                if (distance < minDistance && distance < 150) {
+                    minDistance = distance;
+                    closestSide = side;
+                }
+            }
+            
+            Object.values(placementIndicators).forEach(indicator => {
+                indicator.className = 'placement-indicator';
+                const side = indicator.id.split('-')[1];
+                if (!gameState.employees.some(emp => emp.side === side)) {
+                    indicator.classList.add('available');
+                } else {
+                    indicator.classList.add('taken');
+                }
+            });
+            
+            if (closestSide) {
+                placementIndicators[closestSide].className = 'placement-indicator';
+                placementIndicators[closestSide].classList.add('available');
+                placementIndicators[closestSide].style.borderWidth = '3px';
+            }
+        });
+
+        gameContainer.addEventListener('drop', e => {
+            e.preventDefault();
+            
+            if (!gameState.gameActive || gameState.isPaused) return;
+            
+            const type = e.dataTransfer.getData('text/plain');
+            if (!['1', '2', '3'].includes(type)) return;
+            
+            if (gameState.employeeCounts[`type${type}`] <= 0) return;
+            
+            let closestPosition = null;
+            let minDistance = Infinity;
+
+            const currentPositions = getEmployeePositions();
+            
+            for (const [side, pos] of Object.entries(currentPositions)) {
+                const taken = gameState.employees.some(emp => emp.side === side);
+                if (taken) continue;
+                
+                const distance = Math.sqrt(
+                    Math.pow(e.clientX - pos.x, 2) + 
+                    Math.pow(e.clientY - pos.y, 2)
+                );
+                
+                if (distance < minDistance && distance < 150) {
+                    minDistance = distance;
+                    closestPosition = { side, ...pos };
+                }
+            }
+            
+            if (closestPosition) {
+                gameState.employeeCounts[`type${type}`]--;
+                localStorage.setItem(`employee${type}CountGame`, gameState.employeeCounts[`type${type}`]);
+                updateEmployeeDisplays();
+                placeEmployee(parseInt(type), closestPosition);
+            }
+            
+            updatePlacementIndicators();
+        });
+
+        function placeEmployee(type, position) {
+            const employee = document.createElement('div');
+            employee.className = `employee ${employeeTypes[type].class}`;
+            employee.style.left = `${position.x}px`;
+            employee.style.top = `${position.y}px`;
+            employee.style.transform = `rotate(${position.rotation}deg)`;
+            console.log("employee placed at " + position.x + " in x direction and " + position.y + " in y direction")
+            
+            const healthBarContainer = document.createElement('div');
+            healthBarContainer.className = 'health-bar-container';
+            
+            const healthBar = document.createElement('div');
+            healthBar.className = 'health-bar employee-health';
+            healthBar.style.width = '100%';
+            
+            healthBarContainer.appendChild(healthBar);
+            employee.appendChild(healthBarContainer);
+            
+            gameContainer.appendChild(employee);
+            
+            gameState.employees.push({
+                element: employee,
+                healthBar: healthBar,
+                x: position.x,
+                y: position.y,
+                side: position.side,
+                type: type,
+                health: employeeTypes[type].health,
+                maxHealth: employeeTypes[type].health,
+                attackCooldown: 0
+            });
+            
+            updatePlacementIndicators();
+        }
+
+        pauseBtn.addEventListener('click', () => {
+            togglePause();
+            audio.pause();
+        });
+    
+        resumeBtn.addEventListener('click', () => {
+            togglePause();
+            updateEmployeeDisplays(); 
+            audio.play();
+        });
+        
+        menuBtn.addEventListener('click', returnToMenu);
+        restartBtn.addEventListener('click', () => {
+            location.href = location.href;
+        });
+
+        initGame();
+    </script>
+</body>
+</html>

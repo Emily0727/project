@@ -1,0 +1,91 @@
+:root {
+    --main-font: "Arial", serif;
+}
+
+.button-container {
+    position: absolute;
+    top: 66vh;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-self: center;
+    justify-content: center;
+    gap: 2vw;
+}
+
+button {
+    background: #B15A63;
+    font-family: var(--main-font);
+    cursor: pointer;
+    padding: 1.5vh 1.5vw;
+    background-color: #8e2e16;
+    color: white;
+    border-radius: 2vh;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 3vh;
+    height: 7vh;
+    width: auto;
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.8); /* soft white glow */
+    text-decoration: none;
+    border: 3px solid #f6eaeb; 
+}
+
+button:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.9); /*add shadow*/
+}
+
+p {
+    font-family: var(--main-font);
+    font-size: 4vh;
+    font-weight: 600;
+    color: #f6eaeb;
+    grid-column: 2;
+    grid-row: 2;
+    align-self: center;
+    margin-top: 0;
+}
+
+h1 {
+    font-family: var(--main-font);
+    font-size: 20vh;
+    font-weight: 900;
+    color: #8e2e16;
+    align-self: center;
+    margin-bottom: 1%;
+    text-shadow:
+        0 0 5px #fff,
+        0 0 10px #fff,
+        0 0 20px #e1beb5,
+        0 0 30px #be7e6d,
+        0 0 40px #a43d24;
+}
+
+h4 {
+    font-family: var(--main-font);
+    font-size: 8vh;
+    font-weight: 900;
+    color: #f6eeef;
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    margin-bottom: 0;
+}
+
+.menu-button {
+    font-family: var(--main-font);
+    cursor: pointer;
+    padding: 1.5vh 1.5vw;
+    background-color: #8e2e16;
+    color: white;
+    border-radius: 2vh;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 3vh;
+    height: 7vh;
+    width: auto;
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.9); /* soft white glow */
+}

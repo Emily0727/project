@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gacha Reveal</title>
+  <style>
+    body {
+        background-color: #111;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        color: white;
+        font-family: var(--main-font);
+        user-select: none;
+    }
+
+    body.reveal-mode {
+        cursor: pointer;
+    }
+
+    #image {
+        width: 75vh;
+        height: 75vh;
+        object-fit: contain;
+        position: relative;
+        z-index: 1;
+        /* transform: scale(2);
+        transform-origin: center;
+        transition: transform 0.3s ease-in-out; */
+    }
+
+    #message {
+        position: absolute;
+        z-index: 2;
+        top: 2vh;
+        margin-top: 20px;
+        font-family: var(--main-font);
+        font-weight: 800;
+        font-size: 10vw;
+        display: none;
+        cursor: pointer;
+    }
+
+    .items {
+      width: 24.5vh;
+      height: 24.5vh;
+      object-fit: contain;
+      position: absolute;
+      transform: translate(-50%, -50%);
+      z-index: 3;
+      display: none;
+      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+      top: 59%;
+      left: 50%;
+    }
+
+    .numbers {
+      font-family: var(--main-font);
+      font-weight: 300;
+      width: 24.5vh;
+      height: 24.5vh;
+      text-align: center;
+      font-size: 5vh;
+      position: absolute;
+      transform: translate(-50%, -50%);
+      z-index: 4;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 0 5px rgba(0, 0, 0, 0.8));
+      top: 59%;
+      left: 50%;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <img id="image" src="./Gacha/1.png" alt="gacha">
+    <img id="item" src="./trash.png" alt="gacha" class="items">
+    <div id="number" class="numbers">0</div>
+  </div>
+  <div id="message">Click to Reveal!</div>
+
+  <script type="module">
+
+      import {pullOne} from "./gachaLogic.js?v1.2";
+      let pullResult = pullOne();
+
+      console.log(pullResult);
+
+      const walkSound = new Audio('walkingSound.mp3');
+      const hiSound = new Audio('Hai.mp3');
+      const hereYouGoSound = new Audio('HereYouGo.mp3');
+      const baiSound = new Audio('Bai.mp3');
+
+      const img = document.getElementById("image");
+      const message = document.getElementById("message");
+      const item = document.getElementById("item");
+      const number = document.getElementById("number");
+
+      const frames = [
+        "./Gacha/1.png",
+        "./Gacha/2.png",
+        "./Gacha/3.png",
+        "./Gacha/4.png",
+        "./Gacha/5.png",
+        "./Gacha/601.png",
+        "./Gacha/7.png",
+        "./Gacha/8.png",
+        "./Gacha/9.png",
+        "./Gacha/10.png"
+      ];
+
+    let step = 0;
+    let clickCount = 0;
+    walkSound.cloneNode().play();
+
+    //cycle through 4 images, then stop on the 5th
+    const interval = setInterval(() => {
+      img.src = frames[step];
+      step++;
+
+      if (step === 5) {
+        hiSound.cloneNode().play();
+        clearInterval(interval);
+        message.style.display = "block";
+        document.body.classList.add("reveal-mode");
+      }
+    }, 300);
+
+    // First click - pull the gacha
+    document.addEventListener("click", async () => {
+      if (step <= 4) return;
+      
+      clickCount++;
+
+      //for saving stuff
+      
+      if (clickCount === 1) {
+        hereYouGoSound.cloneNode().play();
+        console.log("first click");
+
+        img.src = frames[5];
+        message.textContent = "Click to Continue";
+
+        //for display logic
+
+        if (Number.isFinite(pullResult)) {
+          item.src = "icon.png";
+          number.textContent = pullResult;
+          number.style.display = "flex";
+          let raccoonNum = parseInt(localStorage.getItem('totalRaccoonsCaught'));
+          localStorage.setItem('totalRaccoonsCaught', (raccoonNum + parseInt(pullResult)));
+        } else if (pullResult !== "trash") {
+          item.src = `${pullResult}.png`;
+
+          let employeeNum = localStorage.getItem(`${pullResult}Count`);
+          console.log("previous number: " + employeeNum);
+          if (isNaN(Number(employeeNum))) {
+            localStorage.setItem(`${pullResult}Count`, "1");
+          } else {
+            const newCount = Number(employeeNum) + 1;
+            localStorage.setItem(`${pullResult}Count`, newCount.toString());
+          }
+          console.log("current number: " + localStorage.getItem(`${pullResult}Count`));
+
+        }
+        item.style.display = "block";
+      } else if (clickCount === 2) {
+        baiSound.cloneNode().play();
+        walkSound.cloneNode().play();
+
+        console.log("second click");
+        document.body.classList.remove("reveal-mode");
+        
+        let revealIndex = 6;
+        img.src = frames[revealIndex];
+
+        message.style.display = "none";
+        item.style.display = "none";
+        number.style.display = "none";
+
+        const revealInterval = setInterval(() => {
+          revealIndex++;
+          if (revealIndex > 9) {
+            clearInterval(revealInterval);
+            setTimeout(() => {
+              window.location.href = "./gachaScreen.html";
+            }, 100);
+          } else {
+            img.src = frames[revealIndex];
+          }
+        }, 300);
+      }
+    });
+
+
+  </script>
+</body>
+</html>
