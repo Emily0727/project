@@ -252,20 +252,7 @@
           document.body.appendChild(modal);
       }
   
-      onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          uid = user.uid;
-          const ref = doc(db, "users", uid);
-          const snap = await getDoc(ref);
-          await loadConversation();
-          if (!snap.exists()) {
-            await setDoc(ref, { conversation: [] });
-          }
-        } else {
-          alert("You must be signed in to use the chat.");
-          window.location.href = "/LogIn.html";
-        }
-      });
+      
 
         async function updateUserStats() {
             if (!uid) return;
