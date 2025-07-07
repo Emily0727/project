@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>明星时刻 - 你的专属粉丝圈</title>
+  <title>明星朋友圈 - 你的专属赞美空间</title>
   <style>
     * {
       box-sizing: border-box;
@@ -80,13 +80,6 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
     
-    button:disabled {
-      background: #cccccc;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-    
     .posts {
       display: flex;
       flex-direction: column;
@@ -158,12 +151,6 @@
       font-size: 0.8rem;
     }
     
-    .error-message {
-      color: #ff6b81;
-      margin-top: 10px;
-      text-align: center;
-    }
-    
     @media (max-width: 600px) {
       .container {
         padding: 10px;
@@ -182,7 +169,7 @@
 <body>
   <div class="container">
     <header>
-      <h1>明星时刻</h1>
+      <h1>明星朋友圈</h1>
       <p class="subtitle">你的每一刻都值得被赞美</p>
     </header>
     
@@ -190,67 +177,62 @@
       <h2>发布你的动态</h2>
       <textarea id="postContent" placeholder="今天有什么想分享的吗？"></textarea>
       <button id="postButton">发布动态</button>
-      <div id="errorMessage" class="error-message"></div>
     </div>
     
     <div class="posts" id="postsContainer">
-      <div class="loading">加载中...</div>
+      <!-- 帖子会动态加载在这里 -->
     </div>
   </div>
 
   <script>
-    // 使用Gemini API生成赞美回复
-    const GEMINI_API_KEY = "AIzaSyAaELFaZFNagkYJxrcMeq6UBBbH4odYTmc";
-    const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`;
+    // 使用Google Gemini API生成赞美回复
+    const API_KEY = "AIzaSyAaELFaZFNagkYJxrcMeq6UBBbH4odYTmc"; // 这是你提供的API key
+    
+    // 粉丝用户名库
+    const FAN_NAMES = [
+      "忠实粉丝", "小迷妹", "铁杆粉丝", "真爱粉", "星星眼", 
+      "头号粉丝", "默默支持", "永远追随", "你的小太阳", "为你打call",
+      "心动瞬间", "为你而来", "超级迷弟", "永远18岁", "彩虹屁专家",
+      "你的小可爱", "专属小粉丝", "为你痴狂", "眼里只有你", "守护天使"
+    ];
     
     // 存储所有帖子
-    let posts = [];
+    let posts = JSON.parse(localStorage.getItem('posts')) || [];
     
     document.addEventListener('DOMContentLoaded', () => {
       const postButton = document.getElementById('postButton');
       const postContent = document.getElementById('postContent');
       const postsContainer = document.getElementById('postsContainer');
-      const errorMessage = document.getElementById('errorMessage');
       
-      // 加载示例帖子
-      loadSamplePosts();
+      // 加载已有帖子
+      loadPosts();
       
       postButton.addEventListener('click', async () => {
         const content = postContent.value.trim();
-        if (!content) {
-          showError("请输入内容后再发布");
-          return;
-        }
+        if (!content) return;
         
+        // 创建新帖子
+        const newPost = {
+          id: Date.now(),
+          content: content,
+          timestamp: new Date(),
+          comments: [],
+          fanCount: Math.floor(Math.random() * 9000) + 1000 // 随机粉丝数
+        };
+        
+        // 添加到页面
+        addPostToDOM(newPost);
+        posts.unshift(newPost);
+        savePostsToStorage();
+        
+        // 清空输入框
+        postContent.value = '';
+        
+        // 生成3条AI回复
         try {
-          postButton.disabled = true;
-          postButton.textContent = "发布中...";
-          errorMessage.textContent = "";
-          
-          // 创建新帖子
-          const newPost = {
-            id: Date.now(),
-            content: content,
-            timestamp: new Date(),
-            comments: [],
-            fanCount: Math.floor(Math.random() * 9000) + 1000 // 随机粉丝数
-          };
-          
-          // 添加到页面
-          addPostToDOM(newPost);
-          posts.unshift(newPost);
-          
-          // 清空输入框
-          postContent.value = '';
-          
-          // 生成AI回复 (3条不同的评论)
-          const comments = await Promise.all([
-            generateFanComment(content),
-            generateFanComment(content),
-            generateFanComment(content)
-          ]);
-          
+          const comments = await generateAIComments(content, 3);
           newPost.comments = comments;
+          savePostsToStorage();
           
           // 更新DOM显示评论
           const postElement = document.getElementById(`post-${newPost.id}`);
@@ -264,25 +246,12 @@
             });
           }
         } catch (error) {
-          console.error('发布失败:', error);
-          showError("发布失败，请稍后再试");
-        } finally {
-          postButton.disabled = false;
-          postButton.textContent = "发布动态";
+          console.error('生成评论失败:', error);
         }
       });
     });
     
-    // 显示错误信息
-    function showError(message) {
-      const errorElement = document.getElementById('errorMessage');
-      errorElement.textContent = message;
-      setTimeout(() => {
-        errorElement.textContent = "";
-      }, 3000);
-    }
-    
-    // 添加帖子到DOM
+    // 添加帖子到页面
     function addPostToDOM(post) {
       const postsContainer = document.getElementById('postsContainer');
       const postElement = document.createElement('div');
@@ -298,23 +267,7 @@
         </div>
       `;
       
-      // 移除"加载中"提示如果是第一个帖子
-      if (postsContainer.querySelector('.loading')) {
-        postsContainer.innerHTML = '';
-      }
-      
-      postsContainer.prepend(postElement);
-    }
-    
-    // 格式化时间显示
-    function formatTime(date) {
-      const now = new Date();
-      const diff = now - date;
-      
-      if (diff < 60000) return "刚刚";
-      if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;
-      if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`;
-      return `${Math.floor(diff / 86400000)}天前`;
+      postsContainer.insertBefore(postElement, postsContainer.firstChild);
     }
     
     // 创建评论元素
@@ -328,107 +281,120 @@
       return commentElement;
     }
     
-    // 生成粉丝评论
-    async function generateFanComment(postContent) {
-      try {
-        // 模拟不同的粉丝名称
-        const fanNames = [
-          "忠实粉丝", "小迷妹", "铁杆粉丝", "真爱粉", 
-          "星星眼", "头号粉丝", "默默支持", "永远追随",
-          "你的小太阳", "为你打call", "心动瞬间", "为你而来",
-          "超级粉丝", "小迷弟", "永远支持", "你的粉丝"
-        ];
+    // 加载所有帖子
+    function loadPosts() {
+      const postsContainer = document.getElementById('postsContainer');
+      postsContainer.innerHTML = '';
+      
+      if (posts.length === 0) {
+        postsContainer.innerHTML = '<div class="loading">还没有动态，快来发布第一条吧！</div>';
+        return;
+      }
+      
+      posts.forEach(post => {
+        const postElement = document.createElement('div');
+        postElement.className = 'post';
+        postElement.id = `post-${post.id}`;
         
-        // 使用Gemini API生成创意回复
-        const response = await fetch(GEMINI_ENDPOINT, {
+        postElement.innerHTML = `
+          <div class="fans-count">${post.fanCount.toLocaleString()}位粉丝为你点赞</div>
+          <div class="post-content">${post.content}</div>
+          <div class="post-time">${formatTime(post.timestamp)}</div>
+          <div class="comments">
+            ${post.comments.length > 0 ? 
+              post.comments.map(c => `
+                <div class="comment">
+                  <div class="comment-author">${c.author}</div>
+                  <div class="comment-text">${c.text}</div>
+                </div>
+              `).join('') : 
+              '<div class="loading">还没有评论</div>'}
+          </div>
+        `;
+        
+        postsContainer.appendChild(postElement);
+      });
+    }
+    
+    // 保存帖子到本地存储
+    function savePostsToStorage() {
+      localStorage.setItem('posts', JSON.stringify(posts));
+    }
+    
+    // 生成AI评论
+    async function generateAIComments(postContent, count) {
+      const comments = [];
+      
+      for (let i = 0; i < count; i++) {
+        // 随机延迟，模拟真实粉丝陆续评论的效果
+        await new Promise(resolve => setTimeout(resolve, Math.random() * 2000 + 500));
+        
+        const comment = await generateSingleComment(postContent);
+        comments.push(comment);
+      }
+      
+      return comments;
+    }
+    
+    // 生成单条AI评论
+    async function generateSingleComment(postContent) {
+      try {
+        // 调用Gemini API
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`;
+        
+        // 中文系统提示
+        const systemPrompt = `
+        你是一个热情的粉丝，需要用中文对明星发布的动态进行赞美和评论。要求：
+        1. 评论要有创意，充满热情
+        2. 针对不同内容要有不同的赞美角度
+        3. 语气要像真实粉丝，不要太正式
+        4. 每次评论都要不同，不能重复
+        5. 长度在15-30字左右
+        
+        明星发布了以下动态，请用粉丝的语气写一条热情洋溢的中文评论：
+        "${postContent}"
+        `;
+        
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             contents: [{
-              parts: [{
-                text: `你是一个热情洋溢的粉丝，需要用充满创意的方式赞美明星的动态。回复要:
-1. 简短有力 (20字以内)
-2. 充满热情和正能量
-3. 根据内容找到独特角度赞美
-4. 避免重复和千篇一律
-5. 使用emoji增加活力
-                
-明星发布了: "${postContent}"
-请用粉丝语气写一条热情洋溢的评论`
-              }]
+              parts: [{ text: systemPrompt }]
             }]
           })
         });
         
         const data = await response.json();
-        const commentText = data.candidates?.[0]?.content?.parts?.[0]?.text || "太棒了！这就是我喜欢你的原因！❤️";
+        const commentText = data.candidates?.[0]?.content?.parts?.[0]?.text || "你太棒了！";
         
         return {
-          author: fanNames[Math.floor(Math.random() * fanNames.length)],
+          author: FAN_NAMES[Math.floor(Math.random() * FAN_NAMES.length)],
           text: commentText.trim()
         };
       } catch (error) {
-        console.error('生成评论失败:', error);
-        // 返回备用评论
+        console.error('生成评论出错:', error);
+        // 如果API调用失败，返回默认评论
         return {
-          author: "忠实粉丝",
-          text: "太棒了！这就是我喜欢你的原因！❤️"
+          author: FAN_NAMES[Math.floor(Math.random() * FAN_NAMES.length)],
+          text: "你总是能带给我们惊喜！"
         };
       }
     }
     
-    // 加载示例帖子
-    function loadSamplePosts() {
-      const samplePosts = [
-        {
-          id: 1,
-          content: "今天天气真好，出去散步了~",
-          timestamp: new Date(),
-          fanCount: 5234,
-          comments: [
-            { author: "阳光小粉丝", text: "能和你在同一天享受阳光真是太幸福了！☀️" },
-            { author: "散步爱好者", text: "你散步的样子一定很美，羡慕那些能偶遇你的人！💖" },
-            { author: "天气观察员", text: "连天气都为你变得美好，这就是明星效应吧！✨" }
-          ]
-        },
-        {
-          id: 2,
-          content: "尝试做了新菜，味道还不错！",
-          timestamp: new Date(Date.now() - 3600000),
-          fanCount: 7891,
-          comments: [
-            { author: "美食侦探", text: "你做的菜一定色香味俱全，好想尝一口！🍴" },
-            { author: "厨房小白", text: "连做菜都这么有天赋，不愧是全能偶像！👑" },
-            { author: "吃货一枚", text: "看着你的描述就流口水了，这就是偶像的魅力吗？😋" }
-          ]
-        }
-      ];
+    // 格式化时间显示
+    function formatTime(timestamp) {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diff = now - date;
       
-      posts = samplePosts;
+      if (diff < 60000) return '刚刚';
+      if (diff < 3600000) return `${Math.floor(diff/60000)}分钟前`;
+      if (diff < 86400000) return `${Math.floor(diff/3600000)}小时前`;
       
-      // 延迟加载模拟网络请求
-      setTimeout(() => {
-        const postsContainer = document.getElementById('postsContainer');
-        postsContainer.innerHTML = '';
-        
-        samplePosts.forEach(post => {
-          addPostToDOM(post);
-          
-          // 显示评论
-          const postElement = document.getElementById(`post-${post.id}`);
-          if (postElement) {
-            const commentsContainer = postElement.querySelector('.comments');
-            commentsContainer.innerHTML = '';
-            
-            post.comments.forEach(comment => {
-              const commentElement = createCommentElement(comment);
-              commentsContainer.appendChild(commentElement);
-            });
-          }
-        });
-      }, 1000);
+      return `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日`;
     }
   </script>
 </body>
