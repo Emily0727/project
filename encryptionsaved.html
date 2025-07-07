@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Messages - JIMI Encryption</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 60px 0 0;
+            font-family: Arial, sans-serif;
+            color: #003366;
+            background-color: #f5f5f5;
+        }
+        
+        #auth-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 20px;
+            background: linear-gradient(45deg,#032a52, #780b70);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        #user-greeting {
+            font-weight: bold;
+        }
+
+        #logout-btn {
+            padding: 5px 15px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #logout-btn:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+        
+        .header {
+            background: linear-gradient(45deg,#032a52, #780b70);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+        
+        .entryBox {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .entryBox h3 {
+            margin-top: 0;
+            color: #003366;
+        }
+        
+        .entryData {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .entryDate {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+        
+        .entryContent {
+            background-color: #f8fcff;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            overflow-wrap: break-word; 
+        }
+
+        .entryContent pre {
+            white-space: pre-wrap; 
+            word-break: break-all; 
+            overflow-wrap: anywhere; 
+            font-family: monospace; 
+            margin: 0;          
+            max-width: 100%;  
+        }
+        
+        .no-messages {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .delete-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .delete-button:hover {
+            background-color: #c82333;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div id="auth-bar">
+        <span id="user-greeting"></span>
+        <button id="logout-btn">Logout</button>
+    </div>
+    
+    <div class="header">
+        <h1>Saved Encrypted Messages</h1>
+    </div>
+    
+    <div class="container">
+        <a href="encryption.html" class="back-button">Back to Encryption Tool</a>
+        
+        <div id="messages-container">
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(localStorage.getItem('jimiCurrentUser'));
+            const userGreeting = document.getElementById('user-greeting');
+            const logoutBtn = document.getElementById('logout-btn');
+            const messagesContainer = document.getElementById('messages-container');
+            
+            if (!currentUser) {
+                window.location.href = 'encryptionauth.html';
+                return;
+            }
+            
+            // Show user info
+            userGreeting.textContent = `Welcome, ${currentUser.username}`;
+            
+            // Logout handler
+            logoutBtn.addEventListener('click', function() {
+                localStorage.removeItem('jimiCurrentUser');
+                window.location.href = 'encryptionauth.html';
+            });
+            
+            // Load messages for current user only
+            const allSavedMessages = JSON.parse(localStorage.getItem('savedMessages')) || [];
+            const savedMessages = allSavedMessages.filter(msg => msg.user === currentUser.username);
+            
+            if (savedMessages.length === 0) {
+                messagesContainer.innerHTML = `
+                    <div class="no-messages">
+                        <p>No saved messages found.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            savedMessages.forEach((message, index) => {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'entryBox';
+                messageElement.innerHTML = `
+                    <h3>${message.subject}</h3>
+                    <div class="entryData">
+                        <span><strong>Key Hint:</strong> ${message.hint}</span>
+                    </div>
+                    <div class="entryContent">
+                        <pre>${message.message}</pre>
+                    </div>
+                    <button class="delete-button" onclick="deleteMessage(${index})">Delete Message</button>
+                `;
+                messagesContainer.appendChild(messageElement);
+            });
+        });
+        
+        function deleteMessage(index) {
+            if (!confirm("Are you sure you want to delete this message?")) {
+                return;
+            }
+            
+            const currentUser = JSON.parse(localStorage.getItem('jimiCurrentUser'));
+            let allSavedMessages = JSON.parse(localStorage.getItem('savedMessages')) || [];
+            
+            // Filter to get only current user's messages
+            const userMessages = allSavedMessages.filter(msg => msg.user === currentUser.username);
+            
+            // Find the actual index in the full array
+            const messageToDelete = userMessages[index];
+            const fullIndex = allSavedMessages.findIndex(msg => 
+                msg.user === currentUser.username && 
+                msg.date === messageToDelete.date && 
+                msg.message === messageToDelete.message
+            );
+            
+            if (fullIndex !== -1) {
+                allSavedMessages.splice(fullIndex, 1);
+                localStorage.setItem('savedMessages', JSON.stringify(allSavedMessages));
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

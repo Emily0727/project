@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JIMI Encryption</title>
+    <style>
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            color: #000000;
+            background-color: #e3ebf8
+        }
+
+        #auth-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 20px;
+            background: linear-gradient(45deg,#032a52, #780b70);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        #user-greeting {
+            font-weight: bold;
+        }
+
+        #auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        #login-btn, #logout-btn {
+            padding: 5px 15px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #login-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        #logout-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        #login-btn:hover, #logout-btn:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .logo-container {
+            margin-top: 60px; 
+            width: 100%;
+            height: 93vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(45deg,#032a52, #780b70);
+            background-size: 400% 400%;
+            animation: gradientAnimation 15s ease infinite;
+            position: relative;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .logo {
+            max-width: 50%;
+            height: auto;
+            padding: 20px;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+            font-size: 70px;
+            color: white;
+            opacity: 0.8;
+            cursor: pointer;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0) translateX(-50%);}
+            40% {transform: translateY(-20px) translateX(-50%);}
+            60% {transform: translateY(-10px) translateX(-50%);}
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 30px;
+            width: 100%;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
+        }
+
+        .boxContainer {
+            width: 350px;
+            padding: 30px;
+            background-color: rgb(250, 250, 250);
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .boxTitle {
+            margin-bottom: 20px;
+            color: #003366;
+        }
+
+        input {
+            display: block;
+            width: 300px;
+            padding: 12px;
+            margin: 10px auto;
+            font-size: 16px;
+            border: 2px solid #003366;
+            border-radius: 5px;
+            background-color: #ffffff;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0px 0px 8px rgba(0, 123, 255, 0.5);
+        }
+
+        .button-container {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: scale(1.1);
+            box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        button {
+            position: relative;
+            overflow: hidden;
+        }
+
+        
+
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            text-align: left;
+            max-width: 100%;
+        }
+
+        .instructions-container {
+            display: flex;
+            margin-top: 50px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .security-tips {
+            width: 160px;
+            background-color: #003366;
+            color: white;
+            padding: 5px;
+            border-radius: 10px 0 0 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .security-tips-content {
+            padding: 15px;
+            background-color: #003366;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .security-character {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .instructions {
+            padding: 20px;
+            background-color: white;
+            border-radius: 0 10px 10px 0;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            flex-grow: 1;
+        }
+
+        .savePopup {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .savePopupContent {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: black;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .boxContainer {
+                width: 80%;
+            }
+            
+            .instructions-container {
+                flex-direction: column;
+            }
+            
+            .security-tips {
+                width: auto;
+                border-radius: 10px 10px 0 0;
+                padding: 10px;
+            }
+            
+            .instructions {
+                border-radius: 0 0 10px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="auth-bar">
+        <span id="user-greeting"></span>
+        <div class="nav-links">
+            <a href="encryption.html" class="nav-link">Public Challenges</a>
+            <a href="#" class="nav-link" onclick="checkAuthBeforeViewSaved()">Saved Messages</a>
+        </div>
+        <div id="auth-buttons">
+            <button id="login-btn">Login</button>
+            <button id="logout-btn">Logout</button>
+        </div>
+    </div>
+    
+    <div class="logo-container">
+        <img src="Wave.png" alt="Logo" class="logo">
+        <div class="scroll-indicator" onclick="scrollToContent()">↓</div>
+    </div>
+    
+    <div class="container">
+        <div class="boxContainer">
+            <h2>Encryption</h2>
+            <input type="text" id="encryptKey" placeholder="Enter Key" oninput="formatKeyInput(event)">
+            <input type="text" id="encryptMessage" placeholder="Enter Message">
+            <div class="button-container">
+                <button onclick="encryptInputValues()">Submit</button>
+                <button id="saveButton" onclick="openSavePopup()">Save</button>
+            </div>
+            <pre id="encryptOutput"></pre>
+        </div>
+        <div class="boxContainer">
+            <h2>Decryption</h2>
+            <input type="text" id="decryptMessage" placeholder="Enter Message">
+            <input type="text" id="decryptKey" placeholder="Enter Key" oninput="formatKeyInput(event)">
+            <div class="button-container">
+                <button onclick="decryptInputValues()">Submit</button>
+                <button onclick="clearDecryptInputs()">Clear</button>
+            </div>
+            <pre id="decryptOutput"></pre>
+        </div>
+    </div>
+    
+    <div class="instructions-container">
+        <div class="security-tips">
+            <div class="security-character">🔒</div>
+            <div class="security-tips-content" id="securityTip"></div>
+        </div>
+        <div class="instructions">
+            <h3 style="margin-bottom: 25px;">How to Use JIMI Encryption</h3>
+            <ol style="line-height: 1.8; margin-bottom: 20px;">
+                <li style="margin-bottom: 15px;"><strong>Encrypting a Message:</strong>
+                    <ul style="line-height: 1.6; margin-top: 8px;">
+                        <li style="margin-bottom: 8px;">Enter your secret key </li>
+                        <li style="margin-bottom: 8px;">The Key textbox will automatically convert lowercase letters to uppercase and prevent spaces to ensure consistency in punctuation variations</li>
+                        <li style="margin-bottom: 8px;">Type your message in the "Enter Message" field</li>
+                        <li style="margin-bottom: 8px;">Click <strong>Submit</strong> to generate your encrypted code</li>
+                        <li>Use <strong>Save</strong> to store important messages (login required)</li>
+                    </ul>
+                </li>
+                
+                <li style="margin-bottom: 15px;"><strong>Decrypting a Message:</strong>
+                    <ul style="line-height: 1.6; margin-top: 8px;">
+                        <li style="margin-bottom: 8px;">Paste the encrypted code you received</li>
+                        <li style="margin-bottom: 8px;">Enter the <em>exact same key</em> used to encrypt it</li>
+                        <li>Click <strong>Submit</strong> to reveal the original message</li>
+                    </ul>
+                </li>
+            
+            <p style="margin-top: 25px; font-style: italic; color: #780b70; line-height: 1.6;">
+                Note: Both sender and receiver must use the same key for successful decryption.
+            </p>
+        </div>
+    </div>
+    
+    <div id="savePopup" class="savePopup">
+        <div class="savePopupContent">
+            <span class="close" onclick="closeSavePopup()">&times;</span>
+            <h2>Save Encrypted Message</h2>
+            <input type="text" id="saveSubject" placeholder="Subject (required)">
+            <input type="text" id="saveHint" placeholder="Key Hint (required)">
+            <div class="button-container">
+                <button onclick="saveEncryptedMessage()">Save</button>
+                <button onclick="closeSavePopup()">Cancel</button>
+            </div>
+            <div class="button-container" style="margin-top: 10px;">
+                <label>
+                    <input type="checkbox" id="makePublic"> Make this a public challenge
+                </label>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Authentication and UI Setup
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(localStorage.getItem('jimiCurrentUser'));
+            const isGuest = localStorage.getItem('jimiGuestAccess') === 'true';
+            const authBar = document.getElementById('auth-bar');
+            const userGreeting = document.getElementById('user-greeting');
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const saveButton = document.getElementById('saveButton');
+
+            // Set initial UI state
+            if (currentUser) {
+                userGreeting.textContent = `Welcome, ${currentUser.username}`;
+                loginBtn.style.display = 'none';
+                logoutBtn.style.display = 'block';
+                if (saveButton) saveButton.style.display = 'block';
+            } else if (isGuest) {
+                userGreeting.textContent = 'Guest User';
+                loginBtn.style.display = 'block';
+                logoutBtn.style.display = 'none';
+                if (saveButton) saveButton.style.display = 'none';
+            } else {
+                window.location.href = 'encryptionauth.html';
+                return;
+            }
+
+            // Event listeners
+            loginBtn.addEventListener('click', () => window.location.href = 'encryptionauth.html');
+            logoutBtn.addEventListener('click', logout);
+            
+            // Initialize app features
+            showRandomSecurityTip();
+        });
+
+        function logout() {
+            localStorage.removeItem('jimiCurrentUser');
+            localStorage.removeItem('jimiGuestAccess');
+            window.location.href = 'encryptionauth.html';
+        }
+
+        function scrollToContent() {
+            document.querySelector('.container').scrollIntoView({ 
+                behavior: 'smooth' 
+            });
+        }
+
+        function checkAuthBeforeViewSaved() {
+            const currentUser = JSON.parse(localStorage.getItem('jimiCurrentUser'));
+            if (!currentUser) {
+                if (confirm("You need to login to view saved messages. Would you like to login now?")) {
+                    window.location.href = 'encryptionauth.html?redirect=saved';
+                }
+            } else {
+                window.location.href = 'encryptionsaved.html';
+            }
+        }
+
+        // Encryption/Decryption Functions
+        const charMap = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/’!?.,()*&%$#@[]{}<>-_+=~^\"'";
+
+        function formatKeyInput(event) {
+            let input = event.target;
+            input.value = input.value.toUpperCase().replace(/\s/g, '');
+            
+            if (event.data === ' ') {
+                event.preventDefault();
+            }
+        }
+
+        function convertToNumber(char) {
+            let index = charMap.indexOf(char);
+            return index !== -1 ? (index + 10).toString().padStart(2, '0') : "00";
+        }
+
+        function convertToChar(num) {
+            let index = parseInt(num) - 10;
+            return index >= 0 && index < charMap.length ? charMap[index] : " ";
+        }
+
+        function encryptInputValues() {
+            let key = document.getElementById("encryptKey").value;
+            let message = document.getElementById("encryptMessage").value;
+            
+            if (!key || !message) {
+                alert("Please enter both key and message");
+                return;
+            }
+            
+            let keySum = key.split('')
+                .map(convertToNumber)
+                .reduce((a, b) => a + parseInt(b), 0);
+
+            let messageNum = message.split('')
+                .map(convertToNumber)
+                .join('');
+
+            let encryptedNum = BigInt(messageNum) * BigInt(keySum);
+
+            let encryptedText = encryptedNum.toString()
+                .split('')
+                .map(d => String.fromCharCode(65 + parseInt(d)))
+                .join('');
+
+            document.getElementById("encryptOutput").textContent = encryptedText;
+        }
+
+        function decryptInputValues() {
+            let key = document.getElementById("decryptKey").value;
+            let encryptedMessage = document.getElementById("decryptMessage").value;
+
+            if (!key || !encryptedMessage) {
+                alert("Please enter both key and encrypted message");
+                return;
+            }
+
+            try {
+                let keySum = key.split('')
+                    .map(convertToNumber)
+                    .reduce((a, b) => a + parseInt(b), 0);
+
+                let decryptedNum = BigInt(
+                    encryptedMessage.split('')
+                        .map(c => (c.charCodeAt(0) - 65))
+                        .join('')
+                ) / BigInt(keySum);
+
+                let decryptedText = decryptedNum.toString()
+                    .match(/.{1,2}/g)
+                    .map(convertToChar)
+                    .join('');
+
+                document.getElementById("decryptOutput").textContent = decryptedText;
+            } catch (e) {
+                alert("Decryption failed. Please check your key and message.");
+                console.error(e);
+            }
+        }
+
+        function clearDecryptInputs() {
+            document.getElementById("decryptKey").value = "";
+            document.getElementById("decryptMessage").value = "";
+            document.getElementById("decryptOutput").textContent = "";
+        }
+        
+        // Save Message Functions
+        function openSavePopup() {
+            const currentUser = JSON.parse(localStorage.getItem('jimiCurrentUser'));
+            if (!currentUser) {
+                if (confirm("You need to login to save messages. Would you like to login now?")) {
+                    window.location.href = 'encryptionauth.html';
+                }
+                return;
+            }
+            
+            if (!document.getElementById("encryptOutput").textContent.trim()) {
+                alert("Please encrypt a message first before saving.");
+                return;
+            }
+            document.getElementById("savePopup").style.display = "block";
+        }
+
+        function closeSavePopup() {
+            document.getElementById("savePopup").style.display = "none";
+        }
+
+        function saveEncryptedMessage() {
+            const currentUser = JSON.parse(localStorage.getItem('jimiCurrentUser'));
+            if (!currentUser) {
+                alert("Session expired. Please login again.");
+                window.location.href = 'encryptionauth.html';
+                return;
+            }
+            
+            const subject = document.getElementById("saveSubject").value.trim();
+            const hint = document.getElementById("saveHint").value.trim();
+            const encryptedMessage = document.getElementById("encryptOutput").textContent;
+            const originalMessage = document.getElementById("encryptMessage").value;
+            const makePublic = document.getElementById("makePublic").checked;
+            
+            if (!subject || !hint) {
+                alert("Please enter both subject and key hint.");
+                return;
+            }
+            
+            let savedMessages = JSON.parse(localStorage.getItem('savedMessages')) || [];
+            
+            savedMessages.push({
+                user: currentUser.username,
+                subject: subject,
+                hint: hint,
+                message: encryptedMessage,
+                originalMessage: originalMessage,
+                date: new Date().toLocaleString(),
+                isPublic: makePublic
+            });
+            
+            localStorage.setItem('savedMessages', JSON.stringify(savedMessages));
+            
+            document.getElementById("saveSubject").value = "";
+            document.getElementById("saveHint").value = "";
+            document.getElementById("makePublic").checked = false;
+            closeSavePopup();
+            alert("Message saved successfully!");
+        }
+        
+        // Security Tips
+        const securityTips = [
+            "Did you know? Changing passwords regularly improves security!",
+            "Tip: Never share your encryption key over email or messaging apps.",
+            "Fact: Two-factor authentication adds an extra layer of security.",
+            "Remember: Use different passwords for different accounts.",
+            "Security Tip: Avoid using personal information in passwords.",
+            "Did you know? Public WiFi networks can be insecure for sensitive data.",
+            "Tip: Always log out of accounts on shared computers.",
+            "Fact: Phishing scams often try to trick you into revealing passwords.",
+            "Security Tip: Keep your software updated for the latest security patches.",
+            "Remember: Encrypt sensitive files before uploading to cloud storage."
+        ];
+        
+        const securityCharacters = ["🔒", "🛡️", "🔑", "👮", "💻", "🕵️", "🚨", "👁️", "📱", "🌐"];
+        
+        function showRandomSecurityTip() {
+            const tipElement = document.getElementById('securityTip');
+            const randomTip = securityTips[Math.floor(Math.random() * securityTips.length)];
+            const randomChar = securityCharacters[Math.floor(Math.random() * securityCharacters.length)];
+            
+            document.querySelector('.security-character').textContent = randomChar;
+            tipElement.textContent = randomTip;
+            tipElement.style.color = "#ffffff";
+        }
+        
+        setInterval(showRandomSecurityTip, 10000);
+        
+        
+    </script>
+</body>
+</html>

@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>黄金谜案：绯色交响曲</title>
+    <style>
+        :root {
+            --primary-color: #d4af37;
+            --secondary-color: #3a2c1a;
+            --text-color: #f0e6d2;
+            --highlight-color: #e8c547;
+            --case1-color: #d4af37;
+            --case2-color: #c93756;
+            --case3-color: #4682b4;
+            --bg-image: url('https://images.unsplash.com/photo-1605106702734-205df224ecce?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+        }
+        
+        body {
+            font-family: 'SimSun', '宋体', serif;
+            background-color: #1a120b;
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-image: var(--bg-image);
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-blend-mode: multiply;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgba(26, 18, 11, 0.9);
+            border: 1px solid var(--primary-color);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+            border-radius: 5px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.8em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-style: italic;
+            color: var(--highlight-color);
+        }
+        
+        h2 {
+            color: var(--highlight-color);
+            border-left: 4px solid var(--primary-color);
+            padding-left: 10px;
+            margin-top: 25px;
+        }
+        
+        h3 {
+            color: var(--primary-color);
+            border-bottom: 1px dashed var(--primary-color);
+            padding-bottom: 5px;
+        }
+        
+        .game-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .scene-container {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 15px;
+        }
+        
+        .scene {
+            background-color: rgba(58, 44, 26, 0.7);
+            padding: 20px;
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+        
+        .interaction-panel {
+            background-color: rgba(26, 18, 11, 0.9);
+            padding: 20px;
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 15px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .tab-btn {
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            color: var(--text-color);
+            padding: 8px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            border-bottom-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .notes-area {
+            height: 100%;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            background-color: #2a2118;
+            color: var(--text-color);
+            border: 1px solid var(--primary-color);
+            padding: 10px;
+            font-family: inherit;
+            resize: none;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 3px;
+            font-family: inherit;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: var(--highlight-color);
+            transform: translateY(-2px);
+        }
+        
+        .clue {
+            background-color: rgba(212, 175, 55, 0.1);
+            border-left: 3px solid var(--primary-color);
+            padding: 12px;
+            margin: 12px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .clue:hover {
+            background-color: rgba(212, 175, 55, 0.2);
+        }
+        
+        .selected {
+            background-color: rgba(212, 175, 55, 0.3);
+        }
+        
+        .suspect {
+            background-color: rgba(201, 55, 86, 0.1);
+            border-left: 3px solid var(--case2-color);
+            padding: 12px;
+            margin: 12px 0;
+            cursor: pointer;
+        }
+        
+        .suspect:hover {
+            background-color: rgba(201, 55, 86, 0.2);
+        }
+        
+        .testimony {
+            font-style: italic;
+            color: #d4af37;
+            margin: 5px 0 10px 15px;
+        }
+        
+        .solution-area {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: rgba(58, 44, 26, 0.5);
+            border: 1px dashed var(--primary-color);
+        }
+        
+        .case-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .case-btn {
+            background-color: var(--secondary-color);
+            border: 2px solid var(--primary-color);
+            min-width: 180px;
+        }
+        
+        .case-btn.active {
+            color: var(--secondary-color);
+        }
+        
+        .case1-btn.active {
+            background-color: var(--case1-color);
+        }
+        
+        .case2-btn.active {
+            background-color: var(--case2-color);
+        }
+        
+        .case3-btn.active {
+            background-color: var(--case3-color);
+        }
+        
+        input[type="text"] {
+            background-color: #2a2118;
+            color: var(--text-color);
+            border: 1px solid var(--primary-color);
+            padding: 8px;
+            margin-left: 5px;
+            width: 200px;
+        }
+        
+        .relationship-chart {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: rgba(58, 44, 26, 0.5);
+            border: 1px solid var(--primary-color);
+            font-size: 0.9em;
+        }
+        
+        .relationship-item {
+            margin: 5px 0;
+            padding-left: 15px;
+            position: relative;
+        }
+        
+        .relationship-item:before {
+            content: "•";
+            color: var(--primary-color);
+            position: absolute;
+            left: 5px;
+        }
+        
+        @media (max-width: 900px) {
+            .game-area {
+                grid-template-columns: 1fr;
+            }
+            
+            .case-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .case-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>黄金谜案：绯色交响曲</h1>
+            <p class="subtitle">当爱与恨在命运的五线谱上交织，谁在演奏最后的安魂曲？</p>
+        </header>
+        
+        <div class="case-selector">
+            <button class="case-btn case1-btn active" onclick="loadCase(1)">案件一：歌剧院的魅影</button>
+            <button class="case-btn case2-btn" onclick="loadCase(2)">案件二：血色婚礼</button>
+            <button class="case-btn case3-btn" onclick="loadCase(3)">案件三：画廊的谎言</button>
+        </div>
+        
+        <div class="game-area">
+            <div class="scene-container">
+                <h2 id="case-title">案发现场</h2>
+                <div class="scene" id="scene-description">
+                    <!-- 动态加载案件内容 -->
+                </div>
+            </div>
+            
+            <div class="interaction-panel">
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="openTab('notes')">侦探笔记</button>
+                    <button class="tab-btn" onclick="openTab('interrogation')">提审嫌疑人</button>
+                    <button class="tab-btn" onclick="openTab('solution')">提交答案</button>
+                </div>
+                
+                <div id="notes" class="tab-content active">
+                    <div class="notes-area">
+                        <h3>人物关系图</h3>
+                        <div class="relationship-chart" id="relationship-chart">
+                            <!-- 动态加载人物关系 -->
+                        </div>
+                        <h3>线索整理</h3>
+                        <textarea id="detective-notes" placeholder="在这里记录你的推理..."></textarea>
+                        <button onclick="clearNotes()">清空笔记</button>
+                    </div>
+                </div>
+                
+                <div id="interrogation" class="tab-content">
+                    <h3>嫌疑人审讯室</h3>
+                    <div id="suspect-list">
+                        <!-- 动态加载嫌疑人列表 -->
+                    </div>
+                    <div id="testimony-display" style="margin-top:15px; min-height:150px; border-top:1px solid var(--primary-color); padding-top:10px;">
+                        <p>点击嫌疑人开始审讯...</p>
+                    </div>
+                </div>
+                
+                <div id="solution" class="tab-content">
+                    <div class="solution-area">
+                        <h3>最终推理</h3>
+                        <p>凶手是谁？ <input type="text" id="culprit"></p>
+                        <p>动机是什么？ <input type="text" id="motive"></p>
+                        <p>使用了什么手法？ <input type="text" id="method"></p>
+                        <p>案件背后的真相（选填）： <input type="text" id="truth"></p>
+                        <button onclick="checkSolution()">提交答案</button>
+                        <p id="result-message"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025 黄金谜案系列 - 绯色交响曲 | 致敬《明星大侦探》</p>
+        </footer>
+    </div>
+
+    <script>
+        // 当前案件编号
+        let currentCase = 1;
+        
+        // 案件数据
+        const cases = {
+            1: {
+                title: "案件一：歌剧院的魅影",
+                description: `
+                    <p>时间：1927年9月15日，午夜</p>
+                    <p>地点：巴黎歌剧院后台</p>
+                    <p>死者：维克多·杜兰德，48岁，歌剧院老板</p>
+                    <p>现场状况：杜兰德被发现吊死在舞台机械装置上，看似自杀。但警方发现这是一场精心策划的谋杀。案发时正在上演《浮士德》。</p>
+                    
+                    <h3>现场线索</h3>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>尸体状况：</strong>颈部有两条勒痕，一条水平（绞刑痕），一条V型（上吊痕）。指甲中有红色纤维。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>舞台机关：</strong>控制吊桥的绳索被调换过，上面检测到杜兰德的指纹和另一组未知指纹。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>遗书：</strong>打字机打印，署名笔迹鉴定为真，但内容提到"为20年前的事赎罪"。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>化妆间：</strong>杜兰德的化妆镜后藏着一张1907年的旧照片，显示他与三名年轻舞者。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>财务记录：</strong>歌剧院长期亏损，但杜兰德私人账户最近存入5万法郎，来源不明。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>舞台监督日志：</strong>案发当天《浮士德》第三幕的梅菲斯特戏服被提前取走。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>观众席：</strong>VIP包厢发现一根带口红印的烟蒂，品牌与剧院女高音常用的一致。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>道具间：</strong>少了一条用于《卡门》斗牛场景的红绸带。
+                    </div>
+                `,
+                relationships: [
+                    "杜兰德20年前是舞蹈演员，与三位同伴组成'四小天鹅'组合",
+                    "女高音艾玛是杜兰德情妇，最近要求他离婚",
+                    "舞台技师安德烈是杜兰德表弟，因赌博欠下高利贷",
+                    "舞者索菲是当年'四小天鹅'成员之女，刚进入歌剧院",
+                    "投资人路易长期想收购歌剧院改建赌场"
+                ],
+                suspects: [
+                    {
+                        name: "艾玛·贝利尼（女高音）",
+                        testimony: [
+                            "我和维克多的关系？哦，大家都知道...但最近他在疏远我",
+                            "那天我在包厢看演出，中途去补妆了",
+                            "20年前？那时我还没出生！你们在暗示什么？",
+                            "那5万法郎？可能是他卖掉了我送他的怀表"
+                        ],
+                        secrets: [
+                            "知道杜兰德年轻时导致同伴瘫痪的丑闻",
+                            "怀孕但杜兰德拒绝承认孩子是他的"
+                        ]
+                    },
+                    {
+                        name: "安德烈·杜兰德（舞台技师）",
+                        testimony: [
+                            "我是他唯一的亲人，怎么会害他？",
+                            "那些机关每天都要检查，不可能出错",
+                            "欠债？那是...投资失败",
+                            "照片上的女孩？好像是叔叔当年的舞伴"
+                        ],
+                        secrets: [
+                            "暗中将歌剧院设备卖给竞争对手",
+                            "知道舞台机关的秘密改装方法"
+                        ]
+                    },
+                    {
+                        name: "索菲·勒克莱尔（新晋舞者）",
+                        testimony: [
+                            "我只是来追梦的，不认识杜兰德先生",
+                            "红绸带？可能被拿去当围巾了",
+                            "我母亲确实跳过芭蕾，但早已去世",
+                            "《浮士德》第三幕？我在后台练习"
+                        ],
+                        secrets: [
+                            "母亲是杜兰德当年事故的受害者",
+                            "随身携带母亲留下的复仇日记"
+                        ]
+                    },
+                    {
+                        name: "路易·莫罗（投资人）",
+                        testimony: [
+                            "我只看重商业价值，不参与个人恩怨",
+                            "5万法郎？那是预付款",
+                            "改建计划需要他签字，我没理由杀他",
+                            "遗书内容？很符合他的风格"
+                        ],
+                        secrets: [
+                            "与黑帮有关系，曾威胁杜兰德",
+                            "知道杜兰德伪造自杀现场的计划"
+                        ]
+                    }
+                ],
+                solution: {
+                    culprit: ["索菲", "勒克莱尔", "舞者"],
+                    motive: ["复仇", "母亲", "事故", "瘫痪"],
+                    method: ["红绸带", "机关", "伪造自杀"],
+                    truth: ["20年前杜兰德故意导致舞伴瘫痪", "伪造成自杀掩盖真相"],
+                    correctMessage: `
+                        🎭 恭喜！你揭开了歌剧院的秘密！<br><br>
+                        真相：索菲为母亲复仇。20年前杜兰德为独舞机会故意松动舞台机关导致同伴瘫痪。<br>
+                        手法：用红绸带勒晕杜兰德后，利用调换的舞台机关制造自杀假象。<br>
+                        讽刺：杜兰德准备的5万法郎本是给当年受害者的封口费，却成了自己的丧葬费。
+                    `
+                }
+            },
+            2: {
+                title: "案件二：血色婚礼",
+                description: `
+                    <p>时间：2023年6月18日，婚宴现场</p>
+                    <p>地点：滨海度假酒店</p>
+                    <p>死者：林志远，35岁，科技公司CEO</p>
+                    <p>现场状况：新郎在婚礼致辞后突然倒地身亡。婚戒内侧检测出蓖麻毒素，香槟杯却无毒。现场每位宾客都与死者有复杂关系。</p>
+                    
+                    <h3>现场线索</h3>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>尸体状况：</strong>手指肿胀发黑，婚戒内侧有刮痕，检测出蓖麻毒素。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>婚戒：</strong>由新娘设计，原定昨天取货但因"尺寸问题"延迟到今早。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>手机记录：</strong>死者生前最后通话是给备注"A"的人："按约定转账了"。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>财务记录：</strong>死者公司账目异常，婚前三天向海外账户转账200万美元。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>新娘日记：</strong>"发现他的秘密后，这场婚礼必须继续..."
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>伴郎电脑：</strong>搜索记录包括"蓖麻毒素提取"和"延迟性毒发"。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>酒店监控：</strong>新娘母亲在婚礼前单独进入过戒指保管室。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>遗嘱：</strong>婚前协议规定，若婚礼完成前死亡，财产归前妻所有。
+                    </div>
+                `,
+                relationships: [
+                    "新娘苏媛是死者第三任妻子，婚前是公司公关总监",
+                    "伴郎张睿是公司CTO，与死者有专利纠纷",
+                    "新娘母亲曾反对婚事，一周前突然转变态度",
+                    "前妻李雯带着8岁儿子出席婚礼，孩子患罕见病需天价治疗费",
+                    "死者弟弟林志明因赌博被逐出家族企业"
+                ],
+                suspects: [
+                    {
+                        name: "苏媛（新娘）",
+                        testimony: [
+                            "戒指确实是我设计的，但制作由珠宝店完成",
+                            "200万美元？公司正常海外投资",
+                            "我早知道他有外遇，但没想到是...",
+                            "母亲进保管室是帮我取备用耳环"
+                        ],
+                        secrets: [
+                            "掌握死者财务造假证据",
+                            "婚前协议有隐藏条款"
+                        ]
+                    },
+                    {
+                        name: "张睿（伴郎/CTO）",
+                        testimony: [
+                            "那些搜索？我在写犯罪小说！",
+                            "专利纠纷已经和解了",
+                            "'A'是我绰号，但那通电话不是我接的",
+                            "他答应今天婚礼后公布新股权分配"
+                        ],
+                        secrets: [
+                            "暗中将公司技术卖给竞争对手",
+                            "与死者前妻是大学同学"
+                        ]
+                    },
+                    {
+                        name: "王丽华（新娘母亲）",
+                        testimony: [
+                            "我反对是因为发现他虐待前妻",
+                            "改变主意是看到女儿真心爱他",
+                            "保管室有监控，我能做什么？",
+                            "他承诺会资助我癌症研究项目"
+                        ],
+                        secrets: [
+                            "曾是生化专家，熟悉蓖麻毒素",
+                            "知道死者不孕的真相"
+                        ]
+                    },
+                    {
+                        name: "李雯（前妻）",
+                        testimony: [
+                            "带孩子来是志远要求的",
+                            "治疗费？他有定期汇款",
+                            "婚前协议不是我提出的",
+                            "那个海外账户...像是孩子的信托基金"
+                        ],
+                        secrets: [
+                            "孩子生父其实是张睿",
+                            "掌握死者商业犯罪的证据"
+                        ]
+                    }
+                ],
+                solution: {
+                    culprit: ["王丽华", "新娘母亲"],
+                    motive: ["保护女儿", "虐待", "癌症研究"],
+                    method: ["戒指", "蓖麻毒素", "延迟毒发"],
+                    truth: ["死者用假抗癌项目骗捐", "计划婚礼后卷款潜逃"],
+                    correctMessage: `
+                        💍 恭喜！你揭穿了血色婚礼的谎言！<br><br>
+                        真相：新娘母亲发现死者虚构抗癌项目骗捐，真相比女儿知道的更黑暗。<br>
+                        手法：用癌症研究实验室的蓖麻毒素处理戒指内侧，利用体温缓慢释放毒素。<br>
+                        讽刺：死者准备的潜逃资金中，有一部分是骗取自新娘母亲研究基金的"捐款"。
+                    `
+                }
+            },
+            3: {
+                title: "案件三：画廊的谎言",
+                description: `
+                    <p>时间：2023年10月30日，艺术展开幕夜</p>
+                    <p>地点：白立方当代艺术中心</p>
+                    <p>死者：陈墨，41岁，著名艺术评论家</p>
+                    <p>现场状况：陈墨在点评新锐艺术家梁小曼的作品后突然抽搐死亡。检测出河豚毒素，但现场食物无毒。死者手中攥着一幅被撕毁的画作残片。</p>
+                    
+                    <h3>现场线索</h3>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>尸体状况：</strong>嘴角有白色粉末，检测为河豚毒素与颜料的混合物。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>画作残片：</strong>来自梁小曼的《自画像系列》，但风格与展出作品明显不同。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>艺术评论：</strong>陈墨生前最后一篇文章揭露"当代艺术代笔产业链"。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>画廊记录：</strong>梁小曼近三年作品风格突变，销量增长10倍。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>手机照片：</strong>死者相册有梁小曼工作室的偷拍照，显示他人正在作画。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>财务往来：</strong>陈墨账户定期收到来自"艺海公司"的汇款，与梁小曼属同一集团。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>医疗报告：</strong>梁小曼患有进行性肌萎缩，近半年手部震颤加剧。
+                    </div>
+                    <div class="clue" onclick="addToNotes(this)">
+                        <strong>监控记录：</strong>开幕前陈墨与梁小曼的经纪人激烈争吵。
+                    </div>
+                `,
+                relationships: [
+                    "梁小曼是近年崛起的'天才画家'，实际已无法执笔",
+                    "经纪人马克实为艺海公司少东，操控多位艺术家",
+                    "策展人薇薇安是陈墨前妻，离婚后事业下滑",
+                    "保安老赵曾是美术学院教授，因抄袭案落魄",
+                    "艺术修复师小林是梁小曼的妹妹，一直默默代笔"
+                ],
+                suspects: [
+                    {
+                        name: "梁小曼（艺术家）",
+                        testimony: [
+                            "那些画...当然都是我亲手...（咳嗽）",
+                            "陈老师一直很支持我，为什么要害他？",
+                            "白色粉末？可能是我的止痛药",
+                            "妹妹只是帮我整理画具"
+                        ],
+                        secrets: [
+                            "三年前就已无法作画",
+                            "知道陈墨收钱写假评论的事"
+                        ]
+                    },
+                    {
+                        name: "马克（经纪人）",
+                        testimony: [
+                            "商业运作而已，算什么丑闻？",
+                            "汇款是正常稿费，他有写专栏",
+                            "争吵？他威胁要曝光'不存在的'代笔",
+                            "小曼的病况属于隐私"
+                        ],
+                        secrets: [
+                            "控制着整个代笔工厂",
+                            "掌握陈墨受贿的证据"
+                        ]
+                    },
+                    {
+                        name: "薇薇安（策展人）",
+                        testimony: [
+                            "离婚后我们就没联系，除了工作",
+                            "他评论一向尖酸，但这次特别针对小曼",
+                            "那幅残片...像是早期风格？",
+                            "艺海公司？标准的艺术吸血鬼"
+                        ],
+                        secrets: [
+                            "知道陈墨与梁小曼的隐秘关系",
+                            "保留着陈墨学术造假的证据"
+                        ]
+                    },
+                    {
+                        name: "小林（艺术修复师）",
+                        testimony: [
+                            "我只是修复师，不懂创作",
+                            "姐姐的病...她不想让人知道",
+                            "陈老师常来工作室'指导'",
+                            "那些白色颜料是特殊配方..."
+                        ],
+                        secrets: [
+                            "实际是梁小曼所有作品的创作者",
+                            "与陈墨有秘密合作计划"
+                        ]
+                    }
+                ],
+                solution: {
+                    culprit: ["小林", "修复师", "妹妹"],
+                    motive: ["保护姐姐", "揭露真相", "自由创作"],
+                    method: ["颜料", "河豚毒素", "画作"],
+                    truth: ["陈墨计划曝光代笔后自己接手小林", "早期画作为姐妹共同创作"],
+                    correctMessage: `
+                        🎨 恭喜！你识破了艺术界的骗局！<br><br>
+                        真相：小林用含毒颜料重绘早期作品，当陈墨习惯性舔手指点评时中毒。<br>
+                        手法：河豚毒素混合在模仿旧作的颜料中，针对陈墨的品画习惯。<br>
+                        讽刺：陈墨本想曝光代笔后独占小林才能，却死在最欣赏的"真迹"前。
+                    `
+                }
+            }
+        };
+        
+        // 加载案件
+        function loadCase(caseNumber) {
+            currentCase = caseNumber;
+            const caseData = cases[caseNumber];
+            
+            // 更新UI
+            document.getElementById('case-title').textContent = caseData.title;
+            document.getElementById('scene-description').innerHTML = caseData.description;
+            
+            // 更新人物关系图
+            let relationshipHTML = '';
+            caseData.relationships.forEach(relation => {
+                relationshipHTML += `<div class="relationship-item">${relation}</div>`;
+            });
+            document.getElementById('relationship-chart').innerHTML = relationshipHTML;
+            
+            // 更新嫌疑人列表
+            let suspectsHTML = '';
+            caseData.suspects.forEach((suspect, index) => {
+                suspectsHTML += `
+                    <div class="suspect" onclick="interrogateSuspect(${index})">
+                        <strong>${suspect.name}</strong>
+                    </div>
+                `;
+            });
+            document.getElementById('suspect-list').innerHTML = suspectsHTML;
+            
+            // 重置其他内容
+            document.getElementById('detective-notes').value = '';
+            document.getElementById('culprit').value = '';
+            document.getElementById('motive').value = '';
+            document.getElementById('method').value = '';
+            document.getElementById('truth').value = '';
+            document.getElementById('result-message').textContent = '';
+            document.getElementById('testimony-display').innerHTML = '<p>点击嫌疑人开始审讯...</p>';
+            
+            // 更新案件按钮状态
+            document.querySelectorAll('.case-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.case${caseNumber}-btn`).classList.add('active');
+            
+            // 根据案件改变主题色
+            let primaryColor;
+            switch(caseNumber) {
+                case 1: primaryColor = 'var(--case1-color)'; break;
+                case 2: primaryColor = 'var(--case2-color)'; break;
+                case 3: primaryColor = 'var(--case3-color)'; break;
+                default: primaryColor = 'var(--primary-color)';
+            }
+            document.documentElement.style.setProperty('--primary-color', primaryColor);
+        }
+        
+        // 切换标签页
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+        
+        // 添加线索到笔记
+        function addToNotes(element) {
+            const notes = document.getElementById('detective-notes');
+            notes.value += `• ${element.textContent}\n`;
+            
+            // 高亮选中的线索
+            document.querySelectorAll('.clue').forEach(c => c.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+        
+        // 审讯嫌疑人
+        function interrogateSuspect(index) {
+            const suspect = cases[currentCase].suspects[index];
+            let testimonyHTML = `
+                <h4>${suspect.name}</h4>
+                <p><em>点击每条证词查看隐藏信息</em></p>
+            `;
+            
+            suspect.testimony.forEach((line, i) => {
+                testimonyHTML += `
+                    <div class="testimony" onclick="revealSecret(${index}, ${i})">
+                        "${line}"
+                    </div>
+                `;
+            });
+            
+            document.getElementById('testimony-display').innerHTML = testimonyHTML;
+        }
+        
+        // 揭示秘密
+        function revealSecret(suspectIndex, testimonyIndex) {
+            const suspect = cases[currentCase].suspects[suspectIndex];
+            const testimonyElement = document.querySelectorAll('#testimony-display .testimony')[testimonyIndex];
+            
+            // 随机显示一个秘密（如果有）
+            if (suspect.secrets && suspect.secrets.length > 0) {
+                const randomSecret = suspect.secrets[Math.floor(Math.random() * suspect.secrets.length)];
+                testimonyElement.innerHTML += `<br><span style="color:#ff6b6b">[秘密] ${randomSecret}</span>`;
+            } else {
+                testimonyElement.innerHTML += `<br><span style="color:#aaa">[没有更多信息]</span>`;
+            }
+        }
+        
+        // 清空笔记
+        function clearNotes() {
+            if (confirm('确定要清空所有笔记吗？')) {
+                document.getElementById('detective-notes').value = '';
+            }
+        }
+        
+        // 检查答案
+        function checkSolution() {
+            const culprit = document.getElementById('culprit').value.trim().toLowerCase();
+            const motive = document.getElementById('motive').value.trim().toLowerCase();
+            const method = document.getElementById('method').value.trim().toLowerCase();
+            const truth = document.getElementById('truth').value.trim().toLowerCase();
+            
+            const caseData = cases[currentCase].solution;
+            const correctCulprit = caseData.culprit.some(v => culprit.includes(v.toLowerCase()));
+            const correctMotive = caseData.motive.some(v => motive.includes(v.toLowerCase()));
+            const correctMethod = caseData.method.some(v => method.includes(v.toLowerCase()));
+            const correctTruth = !truth || caseData.truth.some(v => truth.includes(v.toLowerCase()));
+            
+            const resultMessage = document.getElementById('result-message');
+            
+            if (correctCulprit && correctMotive && correctMethod) {
+                resultMessage.innerHTML = caseData.correctMessage;
+                resultMessage.style.color = 'var(--primary-color)';
+                
+                // 显示隐藏真相（如果填写正确）
+                if (correctTruth && truth) {
+                    resultMessage.innerHTML += `<br><br><strong>隐藏真相：</strong>${caseData.truth.join("；")}`;
+                }
+            } else {
+                let feedback = '❌ 答案不完全正确。提示：';
+                if (!correctCulprit) feedback += '注意人物关系图；';
+                if (!correctMotive) feedback += '挖掘深层动机；';
+                if (!correctMethod) feedback += '分析毒物/凶器；';
+                if (truth && !correctTruth) feedback += '真相需要更大胆的想象。';
+                
+                resultMessage.textContent = feedback;
+                resultMessage.style.color = '#ff6b6b';
+            }
+        }
+        
+        // 初始化加载第一个案件
+        window.onload = function() {
+            loadCase(1);
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,2660 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billionaire Tycoon Challenge</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #ff6b6b;
+            --secondary: #5f27cd;
+            --dark: #2f3542;
+            --light: #f5f6fa;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --info: #3498db;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+        
+        /* Top Navigation */
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .navbar-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+        }
+        
+        .search-bar {
+            flex-grow: 1;
+            margin: 0 20px;
+            position: relative;
+        }
+        
+        .search-bar input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 30px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .search-bar input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2);
+        }
+        
+        .search-bar button {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+        }
+        
+        .user-actions a {
+            margin-left: 15px;
+            color: var(--dark);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .user-actions a:hover {
+            color: var(--primary);
+        }
+        
+        /* Game Info Bar */
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            background-color: var(--dark);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .game-timer {
+            font-weight: bold;
+            color: var(--warning);
+        }
+        
+        .game-difficulty {
+            background-color: var(--secondary);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        /* Money Display */
+        .money-display {
+            background: linear-gradient(135deg, #ff6b6b, #5f27cd);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .money-display h2 {
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .money-amount {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .money-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+        }
+        
+        /* Category Navigation */
+        .category-nav {
+            background-color: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .category-list {
+            display: flex;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        
+        .category-item {
+            flex: 0 0 auto;
+            margin-right: 15px;
+            text-align: center;
+        }
+        
+        .category-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--dark);
+            transition: all 0.3s;
+            min-width: 80px;
+        }
+        
+        .category-btn i {
+            font-size: 20px;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+        
+        .category-btn.active, .category-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .category-btn.active i, .category-btn:hover i {
+            color: white;
+        }
+        
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .product-card {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .product-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: var(--primary);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1;
+        }
+        
+        .product-image {
+            height: 180px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .product-card:hover .product-image img {
+            transform: scale(1.05);
+        }
+        
+        .product-info {
+            padding: 15px;
+        }
+        
+        .product-category {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        
+        .product-name {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .product-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .product-original-price {
+            font-size: 14px;
+            color: #95a5a6;
+            text-decoration: line-through;
+            margin-left: 5px;
+        }
+        
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        .product-rating {
+            color: #f39c12;
+        }
+        
+        .product-sold {
+            color: #7f8c8d;
+        }
+        
+        .buy-btn {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .buy-btn:hover {
+            background-color: #ff5252;
+        }
+        
+        .investment-item .buy-btn {
+            background-color: var(--secondary);
+        }
+        
+        .investment-item .buy-btn:hover {
+            background-color: #4b1daf;
+        }
+
+        /* Quantity Selector */
+        .quantity-selector {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .quantity-selector button {
+            width: 30px;
+            height: 30px;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .quantity-selector input {
+            width: 50px;
+            text-align: center;
+            margin: 0 5px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        /* Portfolio Section */
+        .portfolio-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .portfolio-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        
+        .portfolio-item {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .portfolio-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--info);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+        }
+        
+        .portfolio-details {
+            flex-grow: 1;
+        }
+        
+        .portfolio-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .portfolio-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        .portfolio-value {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .portfolio-profit {
+            font-size: 14px;
+        }
+        
+        .profit {
+            color: var(--success);
+        }
+        
+        .loss {
+            color: var(--danger);
+        }
+        
+        /* Purchase History */
+        .history-item {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .history-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-right: 15px;
+        }
+        
+        .history-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .history-info {
+            flex-grow: 1;
+        }
+        
+        .history-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .history-price {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .history-quantity {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-left: 5px;
+        }
+        
+        .history-date {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+        
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--success);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Investment Alert */
+        .investment-alert {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: white;
+            color: var(--dark);
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+            border-left: 5px solid var(--success);
+        }
+
+        .investment-alert.loss {
+            border-left-color: var(--danger);
+        }
+
+        .investment-alert.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--dark);
+        }
+
+        /* Game Rules Modal */
+        .rules-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 3000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .rules-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .rules-content h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .rules-content h3 {
+            color: var(--secondary);
+            margin: 15px 0 10px;
+        }
+
+        .rules-content ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .rules-content li {
+            margin-bottom: 8px;
+        }
+
+        .start-game-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .start-game-btn:hover {
+            background-color: #ff5252;
+        }
+
+        /* Game Over Modal */
+        .game-over-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-over-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .game-over-content h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .game-over-content h3 {
+            color: var(--secondary);
+            margin: 15px 0;
+        }
+
+        .score-detail {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .score-value {
+            font-weight: bold;
+        }
+
+        .profit {
+            color: var(--success);
+        }
+
+        .loss {
+            color: var(--danger);
+        }
+
+        .restart-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .restart-btn:hover {
+            background-color: #4b1daf;
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .navbar-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .logo {
+                margin-bottom: 15px;
+                justify-content: center;
+            }
+            
+            .search-bar {
+                margin: 15px 0;
+            }
+            
+            .user-actions {
+                display: flex;
+                justify-content: center;
+                margin-top: 15px;
+            }
+            
+            .products-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Game Rules Modal (shown first) -->
+    <div class="rules-modal" id="rules-modal">
+        <div class="rules-content">
+            <h2><i class="fas fa-trophy"></i> Billionaire Tycoon Challenge</h2>
+            
+            <h3>Game Objective</h3>
+            <p>Grow your net worth as much as possible through strategic spending and investments within 10 minutes.</p>
+            
+            <h3>Starting Conditions</h3>
+            <ul>
+                <li><strong>$100 billion</strong> in starting cash</li>
+                <li><strong>10-minute</strong> time limit</li>
+                <li>All purchases are final (no refunds)</li>
+            </ul>
+            
+            <h3>Scoring System</h3>
+            <p>Your final score is calculated as:</p>
+            <p><strong>Total Net Worth = Cash + Investment Portfolio Value + (Luxury Assets Value × 0.5)</strong></p>
+            <p>Highest net worth wins!</p>
+            
+            <h3>Investment Strategy</h3>
+            <ul>
+                <li>Investments fluctuate randomly based on their volatility</li>
+                <li>High-risk investments (like Bitcoin) can yield big gains or losses</li>
+                <li>Low-risk investments (like Gold) grow slowly but steadily</li>
+            </ul>
+            
+            <h3>Special Bonuses</h3>
+            <ul>
+                <li><strong>Bargain Hunter:</strong> Buying sale items gives 5% bonus</li>
+                <li><strong>Trendsetter:</strong> First purchase in any category gives 2% bonus</li>
+                <li><strong>Diversification:</strong> Own items in 5+ categories for 5% bonus</li>
+            </ul>
+            
+            <h3>Penalties</h3>
+            <ul>
+                <li><strong>Liquidity Crisis:</strong> Lose 2% net worth per minute if cash < $1B</li>
+                <li><strong>Overconcentration:</strong> Any investment >30% of portfolio increases volatility</li>
+            </ul>
+            
+            <h3>Tips for Success</h3>
+            <ul>
+                <li>Balance cash, investments, and luxury assets</li>
+                <li>Early game: Focus on investments to grow capital</li>
+                <li>Mid game: Diversify across categories</li>
+                <li>Late game: Buy high-value luxury items</li>
+            </ul>
+            
+            <button class="start-game-btn" id="start-game-btn">
+                <i class="fas fa-play"></i> Start Game
+            </button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="game-over-modal" id="game-over-modal">
+        <div class="game-over-content">
+            <h2><i class="fas fa-trophy"></i> Game Over!</h2>
+            <h3>Your Final Score: <span id="final-score">$0</span></h3>
+            
+            <div class="score-detail">
+                <span>Starting Cash:</span>
+                <span class="score-value">$100,000,000,000</span>
+            </div>
+            
+            <div class="score-detail">
+                <span>Remaining Cash:</span>
+                <span class="score-value" id="final-cash">$0</span>
+            </div>
+            
+            <div class="score-detail">
+                <span>Investment Portfolio:</span>
+                <span class="score-value" id="final-investments">$0</span>
+            </div>
+            
+            <div class="score-detail">
+                <span>Luxury Assets (50%):</span>
+                <span class="score-value" id="final-luxury">$0</span>
+            </div>
+            
+            <div class="score-detail">
+                <span>Bonuses/Penalties:</span>
+                <span class="score-value" id="final-bonuses">$0</span>
+            </div>
+            
+            <h3>Achievements</h3>
+            <div id="achievements-list">
+                <!-- Achievements will be added here -->
+            </div>
+            
+            <button class="restart-btn" id="restart-btn">
+                <i class="fas fa-redo"></i> Play Again
+            </button>
+        </div>
+    </div>
+
+    <!-- Top Navigation -->
+    <nav class="navbar">
+        <div class="navbar-container container">
+            <a href="#" class="logo" id="home-link">
+                <i class="fas fa-gem"></i>
+                Billionaire Tycoon
+            </a>
+            
+            <div class="search-bar">
+                <input type="text" placeholder="Search products..." id="search-input">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+            
+            <div class="user-actions">
+                <a href="#" id="portfolio-link"><i class="fas fa-chart-line"></i> Portfolio</a>
+                <a href="#" id="history-link"><i class="fas fa-history"></i> History</a>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Game Info Bar -->
+    <div class="container">
+        <div class="game-info">
+            <div>
+                <span>Time Remaining: </span>
+                <span class="game-timer" id="game-timer">10:00</span>
+            </div>
+            <div>
+                <span>Difficulty: </span>
+                <span class="game-difficulty" id="game-difficulty">Normal</span>
+            </div>
+            <div>
+                <span>Categories Owned: </span>
+                <span id="categories-owned">0</span>/12
+            </div>
+        </div>
+    </div>
+
+    <!-- Home Page -->
+    <div class="container page active" id="home-page">
+        <!-- Money Display -->
+        <div class="money-display">
+            <h2>My Net Worth</h2>
+            <div class="money-amount" id="total-money">$100,000,000,000</div>
+            <div class="money-details">
+                <span>Cash: <span id="cash-amount">$100,000,000,000</span></span>
+                <span>Investments: <span id="investment-amount">$0</span></span>
+                <span>Luxury: <span id="luxury-amount">$0</span></span>
+            </div>
+        </div>
+        
+        <!-- Category Navigation -->
+        <div class="category-nav">
+            <div class="category-list">
+                <div class="category-item">
+                    <a href="#" class="category-btn" data-category="property">
+                        <i class="fas fa-home"></i>
+                        <span>Real Estate</span>
+                    </a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-btn" data-category="vehicle">
+                        <i class="fas fa-car"></i>
+                        <span>Vehicles</span>
+                    </a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-btn" data-category="luxury">
+                        <i class="fas fa-gem"></i>
+                        <span>Luxury</span>
+                    </a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-btn" data-category="investment">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Investments</span>
+                    </a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-btn" data-category="tech">
+                        <i class="fas fa-laptop"></i>
+                        <span>Technology</span>
+                    </a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-btn" data-category="hobby">
+                        <i class="fas fa-gamepad"></i>
+                        <span>Hobbies</span>
+                    </a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-btn" data-category="daily">
+                        <i class="fas fa-shopping-basket"></i>
+                        <span>Daily</span>
+                    </a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-btn" data-category="food">
+                        <i class="fas fa-utensils"></i>
+                        <span>Food</span>
+                    </a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-btn" data-category="cosmetics">
+                        <i class="fas fa-spa"></i>
+                        <span>Cosmetics</span>
+                    </a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-btn" data-category="fashion">
+                        <i class="fas fa-tshirt"></i>
+                        <span>Fashion</span>
+                    </a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-btn" data-category="appliance">
+                        <i class="fas fa-tv"></i>
+                        <span>Appliances</span>
+                    </a>
+                </div>
+                <div class="category-item">
+                    <a href="#" class="category-btn active" data-category="all">
+                        <i class="fas fa-list"></i>
+                        <span>All Items</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Products Grid -->
+        <div class="products-grid" id="products-grid">
+            <!-- Products will be loaded dynamically via JavaScript -->
+        </div>
+    </div>
+
+    <!-- Portfolio Page -->
+    <div class="container page" id="portfolio-page">
+        <div class="portfolio-section">
+            <h3 class="section-title">
+                <span><i class="fas fa-chart-pie"></i> My Investment Portfolio</span>
+                <span id="portfolio-summary">Current Value: $0</span>
+            </h3>
+            
+            <div class="portfolio-items" id="portfolio-items">
+                <p style="grid-column: 1 / -1; text-align: center;">No investments yet</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Page -->
+    <div class="container page" id="history-page">
+        <div class="portfolio-section">
+            <h3 class="section-title">
+                <span><i class="fas fa-history"></i> Purchase History</span>
+            </h3>
+            
+            <div id="history-items">
+                <p style="text-align: center;">No purchase history</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Purchase Modal -->
+    <div class="modal" id="purchase-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-product-name">Product Name</div>
+                <button class="close-modal" id="close-modal">&times;</button>
+            </div>
+            <div id="modal-product-image" style="width: 100%; height: 200px; background-color: #f0f0f0; margin-bottom: 15px; border-radius: 8px; overflow: hidden;">
+                <img src="" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div class="product-price" id="modal-product-price">$0</div>
+            <div class="quantity-selector">
+                <button id="decrease-quantity">-</button>
+                <input type="number" id="quantity" value="1" min="1">
+                <button id="increase-quantity">+</button>
+            </div>
+            <div style="margin: 15px 0; font-weight: bold;" id="total-price">Total: $0</div>
+            <button class="buy-btn" id="confirm-purchase">Confirm Purchase</button>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Investment Alert -->
+    <div class="investment-alert" id="investment-alert"></div>
+    
+    <script>
+        // Game state
+        let gameActive = false;
+        let gameTimeLeft = 600; // 10 minutes in seconds
+        let money = 100000000000; // $100 billion
+        let initialMoney = money;
+        let purchasedItems = [];
+        let investments = [];
+        let currentItem = null;
+        let ownedCategories = new Set();
+        let gameTimer = null;
+        let firstPurchaseInCategory = true;
+        let liquidityCrisisActive = false;
+        let gameDifficulty = 'normal';
+        
+        // DOM elements
+        const rulesModal = document.getElementById('rules-modal');
+        const startGameBtn = document.getElementById('start-game-btn');
+        const gameOverModal = document.getElementById('game-over-modal');
+        const restartBtn = document.getElementById('restart-btn');
+        const finalScore = document.getElementById('final-score');
+        const finalCash = document.getElementById('final-cash');
+        const finalInvestments = document.getElementById('final-investments');
+        const finalLuxury = document.getElementById('final-luxury');
+        const finalBonuses = document.getElementById('final-bonuses');
+        const achievementsList = document.getElementById('achievements-list');
+        const gameTimerDisplay = document.getElementById('game-timer');
+        const categoriesOwnedDisplay = document.getElementById('categories-owned');
+        const moneyDisplay = document.getElementById('total-money');
+        const cashDisplay = document.getElementById('cash-amount');
+        const investmentDisplay = document.getElementById('investment-amount');
+        const luxuryDisplay = document.getElementById('luxury-amount');
+        const productsGrid = document.getElementById('products-grid');
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        const portfolioItems = document.getElementById('portfolio-items');
+        const portfolioSummary = document.getElementById('portfolio-summary');
+        const historyItems = document.getElementById('history-items');
+        const notification = document.getElementById('notification');
+        const investmentAlert = document.getElementById('investment-alert');
+        const searchInput = document.getElementById('search-input');
+
+        // Page elements
+        const homePage = document.getElementById('home-page');
+        const portfolioPage = document.getElementById('portfolio-page');
+        const historyPage = document.getElementById('history-page');
+        const homeLink = document.getElementById('home-link');
+        const portfolioLink = document.getElementById('portfolio-link');
+        const historyLink = document.getElementById('history-link');
+
+        // Modal elements
+        const purchaseModal = document.getElementById('purchase-modal');
+        const closeModal = document.getElementById('close-modal');
+        const modalProductName = document.getElementById('modal-product-name');
+        const modalProductImage = document.getElementById('modal-product-image').querySelector('img');
+        const modalProductPrice = document.getElementById('modal-product-price');
+        const quantityInput = document.getElementById('quantity');
+        const decreaseQuantity = document.getElementById('decrease-quantity');
+        const increaseQuantity = document.getElementById('increase-quantity');
+        const totalPrice = document.getElementById('total-price');
+        const confirmPurchase = document.getElementById('confirm-purchase');
+        
+        // Product data (with image links)
+        const items = [
+            // ========== Real Estate ==========
+            { 
+                id: 101, 
+                name: "Toronto Mansion", 
+                price: 45000000, 
+                originalPrice: 50000000,
+                category: "property", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914",
+                rating: 4.8,
+                sold: 12,
+                badge: "Popular"
+            },
+            { 
+                id: 102, 
+                name: "Vancouver Waterfront Penthouse", 
+                price: 35000000, 
+                category: "property", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2",
+                rating: 4.9,
+                sold: 8
+            },
+            { 
+                id: 103, 
+                name: "Private Island in BC", 
+                price: 250000000, 
+                category: "property", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470",
+                rating: 5.0,
+                sold: 3,
+                badge: "Limited"
+            },
+            { 
+                id: 104, 
+                name: "Montreal Historic Estate", 
+                price: 28000000, 
+                category: "property", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750",
+                rating: 4.7,
+                sold: 5
+            },
+            { 
+                id: 105, 
+                name: "Banff Mountain Lodge", 
+                price: 38000000, 
+                category: "property", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1518780664697-55e3ad937233",
+                rating: 4.8,
+                sold: 6
+            },
+            { 
+                id: 106, 
+                name: "Niagara Falls Villa", 
+                price: 22000000, 
+                category: "property", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1570129477492-45c003edd2be",
+                rating: 4.6,
+                sold: 4
+            },
+
+            // ========== Vehicles ==========
+            { 
+                id: 201, 
+                name: "Rolls-Royce Phantom", 
+                price: 550000, 
+                category: "vehicle", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1555215695-3004980ad54e",
+                rating: 4.7,
+                sold: 25
+            },
+            { 
+                id: 202, 
+                name: "Private Jet (Gulfstream G650)", 
+                price: 65000000, 
+                category: "vehicle", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1556388158-158ea5ccacbd",
+                rating: 4.9,
+                sold: 5
+            },
+            { 
+                id: 203, 
+                name: "Luxury Yacht", 
+                price: 120000000, 
+                category: "vehicle", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1504851149312-7a075b496cc7",
+                rating: 4.8,
+                sold: 7
+            },
+            { 
+                id: 204, 
+                name: "Bombardier Global 7500", 
+                price: 73000000, 
+                category: "vehicle", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05",
+                rating: 5.0,
+                sold: 2,
+                badge: "Limited"
+            },
+            { 
+                id: 205, 
+                name: "Bugatti Chiron", 
+                price: 3500000, 
+                category: "vehicle", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1558981806-ec527fa84c39",
+                rating: 4.9,
+                sold: 12
+            },
+            { 
+                id: 206, 
+                name: "Tesla Roadster Space Edition", 
+                price: 2500000, 
+                category: "vehicle", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d",
+                rating: 4.7,
+                sold: 18
+            },
+
+            // ========== Luxury ==========
+            { 
+                id: 301, 
+                name: "Picasso Painting", 
+                price: 150000000, 
+                category: "luxury", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5",
+                rating: 4.9,
+                sold: 3,
+                badge: "Rare"
+            },
+            { 
+                id: 302, 
+                name: "Patek Philippe Watch", 
+                price: 500000, 
+                originalPrice: 600000,
+                category: "luxury", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e",
+                rating: 4.8,
+                sold: 15,
+                badge: "Sale"
+            },
+            { 
+                id: 303, 
+                name: "10ct Pink Diamond", 
+                price: 25000000, 
+                category: "luxury", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f",
+                rating: 5.0,
+                sold: 2,
+                badge: "Rare"
+            },
+            { 
+                id: 304, 
+                name: "Hermès Birkin Bag Limited", 
+                price: 300000, 
+                category: "luxury", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1594035910387-fea47794261f",
+                rating: 4.7,
+                sold: 8,
+                badge: "Limited"
+            },
+            { 
+                id: 305, 
+                name: "Ming Dynasty Vase", 
+                price: 45000000, 
+                category: "luxury", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1562595999-ef7b0be2a01c",
+                rating: 4.8,
+                sold: 1,
+                badge: "Antique"
+            },
+            { 
+                id: 306, 
+                name: "Louis XIII Black Pearl", 
+                price: 350000, 
+                category: "luxury", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1565695245407-d11d8f64413f",
+                rating: 4.6,
+                sold: 5,
+                badge: "Limited"
+            },
+
+            // ========== Investments ==========
+            { 
+                id: 401, 
+                name: "Shopify Stock", 
+                price: 500000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.15,
+                image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71",
+                rating: 4.5,
+                sold: 42
+            },
+            { 
+                id: 402, 
+                name: "Bitcoin", 
+                price: 300000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.3,
+                image: "https://images.unsplash.com/photo-1621761191319-c6fb62004040",
+                rating: 3.9,
+                sold: 78,
+                badge: "High Risk"
+            },
+            { 
+                id: 403, 
+                name: "Tech Startup", 
+                price: 200000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.4,
+                image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c",
+                rating: 3.5,
+                sold: 23,
+                badge: "High Risk"
+            },
+            { 
+                id: 404, 
+                name: "Gold Reserves", 
+                price: 500000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.1,
+                image: "https://images.unsplash.com/photo-1584982751601-97dcc096659c",
+                rating: 4.2,
+                sold: 31
+            },
+            { 
+                id: 405, 
+                name: "REIT Fund", 
+                price: 300000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.2,
+                image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa",
+                rating: 4.0,
+                sold: 28
+            },
+            { 
+                id: 406, 
+                name: "AI Startup", 
+                price: 500000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.5,
+                image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485",
+                rating: 3.5,
+                sold: 7,
+                badge: "High Risk"
+            },
+            { 
+                id: 407, 
+                name: "Canadian Oil Sands", 
+                price: 400000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.25,
+                image: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb",
+                rating: 3.8,
+                sold: 15,
+                badge: "Commodity"
+            },
+            { 
+                id: 408, 
+                name: "Toronto Real Estate Fund", 
+                price: 350000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.18,
+                image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750",
+                rating: 4.3,
+                sold: 22
+            },
+            { 
+                id: 409, 
+                name: "Blockchain Venture", 
+                price: 450000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.35,
+                image: "https://images.unsplash.com/photo-1621761191319-c6fb62004040",
+                rating: 3.7,
+                sold: 19,
+                badge: "High Risk"
+            },
+            { 
+                id: 410, 
+                name: "Renewable Energy ETF", 
+                price: 250000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.15,
+                image: "https://images.unsplash.com/photo-1508514177221-188b1cf16e9d",
+                rating: 4.1,
+                sold: 27
+            },
+            { 
+                id: 411, 
+                name: "Pharmaceutical Research", 
+                price: 600000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.3,
+                image: "https://images.unsplash.com/photo-1581093450021-4a7360e9a6a3",
+                rating: 3.9,
+                sold: 12
+            },
+            { 
+                id: 412, 
+                name: "Cryptocurrency Mining", 
+                price: 550000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.4,
+                image: "https://images.unsplash.com/photo-1621761191319-c6fb62004040",
+                rating: 3.6,
+                sold: 8,
+                badge: "High Risk"
+            },
+            { 
+                id: 413, 
+                name: "Venture Capital Fund", 
+                price: 700000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.45,
+                image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71",
+                rating: 3.4,
+                sold: 5,
+                badge: "High Risk"
+            },
+            { 
+                id: 414, 
+                name: "Precious Metals ETF", 
+                price: 300000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.12,
+                image: "https://images.unsplash.com/photo-1584982751601-97dcc096659c",
+                rating: 4.0,
+                sold: 31
+            },
+            { 
+                id: 415, 
+                name: "Quantum Computing", 
+                price: 800000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.5,
+                image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485",
+                rating: 3.3,
+                sold: 4,
+                badge: "High Risk"
+            },
+            { 
+                id: 416, 
+                name: "Canadian Banking Stocks", 
+                price: 400000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.2,
+                image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71",
+                rating: 4.2,
+                sold: 18
+            },
+            { 
+                id: 417, 
+                name: "Space Exploration", 
+                price: 900000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.55,
+                image: "https://images.unsplash.com/photo-1541873676-a18131494184",
+                rating: 3.2,
+                sold: 3,
+                badge: "High Risk"
+            },
+            { 
+                id: 418, 
+                name: "Sustainable Agriculture", 
+                price: 350000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.22,
+                image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef",
+                rating: 4.0,
+                sold: 14
+            },
+            { 
+                id: 419, 
+                name: "Robotics & AI", 
+                price: 600000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.35,
+                image: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485",
+                rating: 3.8,
+                sold: 9
+            },
+            { 
+                id: 420, 
+                name: "Global Infrastructure", 
+                price: 500000000, 
+                category: "investment", 
+                type: "investment", 
+                volatility: 0.18,
+                image: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df",
+                rating: 4.1,
+                sold: 16
+            },
+
+            // ========== Technology ==========
+            { 
+                id: 501, 
+                name: "MacBook Pro Max", 
+                price: 5000, 
+                category: "tech", 
+                type: "consumption",
+                luxury: false,
+                image: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9",
+                rating: 4.8,
+                sold: 156
+            },
+            { 
+                id: 502, 
+                name: "PlayStation 5 Bundle", 
+                price: 800, 
+                category: "tech", 
+                type: "consumption",
+                luxury: false,
+                image: "https://images.unsplash.com/photo-1607853202273-797f1c22a38e",
+                rating: 4.9,
+                sold: 289,
+                badge: "Popular"
+            },
+            { 
+                id: 503, 
+                name: "iPhone 15 Pro Max 1TB", 
+                price: 2000, 
+                category: "tech", 
+                type: "consumption",
+                luxury: false,
+                image: "https://images.unsplash.com/photo-1695048133141-3c0e1a5e9a1d",
+                rating: 4.7,
+                sold: 198
+            },
+            { 
+                id: 504, 
+                name: "Alienware Gaming Laptop", 
+                price: 4500, 
+                category: "tech", 
+                type: "consumption",
+                luxury: false,
+                image: "https://images.unsplash.com/photo-1593642632823-8f785ba67e45",
+                rating: 4.6,
+                sold: 87
+            },
+            { 
+                id: 505, 
+                name: "DJI Mavic 3 Pro Drone", 
+                price: 2500, 
+                category: "tech", 
+                type: "consumption",
+                luxury: false,
+                image: "https://images.unsplash.com/photo-1579829366248-204fe8413f31",
+                rating: 4.8,
+                sold: 124
+            },
+            { 
+                id: 506, 
+                name: "Sony A7R5 Camera", 
+                price: 3500, 
+                category: "tech", 
+                type: "consumption",
+                luxury: false,
+                image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32",
+                rating: 4.9,
+                sold: 76
+            },
+
+            // ========== Hobbies ==========
+            { 
+                id: 601, 
+                name: "Limited Edition Hockey Memorabilia", 
+                price: 10000, 
+                originalPrice: 15000,
+                category: "hobby", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1531415074968-036ba1b575da",
+                rating: 5.0,
+                sold: 36,
+                badge: "Limited"
+            },
+            { 
+                id: 602, 
+                name: "Gaming Room Setup", 
+                price: 20000, 
+                category: "hobby", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1598550476439-6847785fcea6",
+                rating: 4.7,
+                sold: 8
+            },
+            { 
+                id: 603, 
+                name: "Vintage Wine Collection", 
+                price: 75000, 
+                category: "hobby", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1556740738-b6a63e27c4df",
+                rating: 4.8,
+                sold: 15
+            },
+            { 
+                id: 604, 
+                name: "Stanley Cup Final VIP Tickets", 
+                price: 15000, 
+                category: "hobby", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e",
+                rating: 4.9,
+                sold: 42,
+                badge: "Popular"
+            },
+            { 
+                id: 605, 
+                name: "Limited Edition Sneakers", 
+                price: 5000, 
+                category: "hobby", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1600269452121-4f2416e55c28",
+                rating: 4.6,
+                sold: 27,
+                badge: "Limited"
+            },
+            { 
+                id: 606, 
+                name: "Professional Camera Kit", 
+                price: 10000, 
+                category: "hobby", 
+                type: "consumption",
+                luxury: false,
+                image: "https://images.unsplash.com/photo-1512790182412-b19e6d62bc39",
+                rating: 4.7,
+                sold: 13
+            },
+
+            // ========== Daily ==========
+            { 
+                id: 701, 
+                name: "Dyson Hair Dryer", 
+                price: 500, 
+                category: "daily", 
+                type: "consumption",
+                luxury: false,
+                image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e",
+                rating: 4.6,
+                sold: 432
+            },
+            { 
+                id: 702, 
+                name: "Tim Hortons Yearly Pass", 
+                price: 1500, 
+                category: "daily", 
+                type: "consumption",
+                luxury: false,
+                image: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5",
+                rating: 4.8,
+                sold: 67
+            },
+            { 
+                id: 703, 
+                name: "Lifetime Gym Membership", 
+                price: 7500, 
+                category: "daily", 
+                type: "consumption",
+                luxury: false,
+                image: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f",
+                rating: 4.3,
+                sold: 23
+            },
+            { 
+                id: 704, 
+                name: "Luxury Mattress", 
+                price: 3000, 
+                category: "daily", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85",
+                rating: 4.7,
+                sold: 58
+            },
+            { 
+                id: 705, 
+                name: "Massage Chair", 
+                price: 4500, 
+                category: "daily", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa",
+                rating: 4.8,
+                sold: 34
+            },
+            { 
+                id: 706, 
+                name: "Smart Home System", 
+                price: 10000, 
+                category: "daily", 
+                type: "consumption",
+                luxury: false,
+                image: "https://images.unsplash.com/photo-1558002038-1055907df827",
+                rating: 4.6,
+                sold: 29
+            },
+            {
+                id: 801, 
+                name: "Premium Alberta Beef (5kg)", 
+                price: 700, 
+                category: "food", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1544025162-d76694265947",
+                rating: 4.9,
+                sold: 156,
+                badge: "Local"
+            },
+            { 
+                id: 802, 
+                name: "Belgian Chocolate Box", 
+                price: 200, 
+                category: "food", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1603569283847-aa295f0d016a",
+                rating: 4.8,
+                sold: 289
+            },
+            { 
+                id: 803, 
+                name: "Italian White Truffle (100g)", 
+                price: 1000, 
+                category: "food", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1601579118946-1e0d7a1a0d6f",
+                rating: 4.7,
+                sold: 42,
+                badge: "Rare"
+            },
+            { 
+                id: 804, 
+                name: "Château Lafite Rothschild 1982", 
+                price: 7500, 
+                category: "food", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1566633806327-68e152aaf26d",
+                rating: 4.9,
+                sold: 23
+            },
+            { 
+                id: 805, 
+                name: "Bluefin Tuna Belly (1kg)", 
+                price: 500, 
+                category: "food", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1568849676085-5659a3c8a9f0",
+                rating: 4.8,
+                sold: 87
+            },
+            { 
+                id: 806, 
+                name: "Premium Caviar (50g)", 
+                price: 800, 
+                category: "food", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1606921231184-6f4a6a6b8a6d",
+                rating: 4.7,
+                sold: 34,
+                badge: "Limited"
+            },
+
+            // ========== Cosmetics ==========
+            { 
+                id: 901, 
+                name: "La Mer Luxury Set", 
+                price: 1500, 
+                category: "cosmetics", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c",
+                rating: 4.9,
+                sold: 156
+            },
+            { 
+                id: 902, 
+                name: "SK-II Essence 330ml", 
+                price: 350, 
+                category: "cosmetics", 
+                type: "consumption",
+                luxury: false,
+                image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b",
+                rating: 4.8,
+                sold: 432
+            },
+            { 
+                id: 903, 
+                name: "HR Re-Plasty Cream", 
+                price: 500, 
+                category: "cosmetics", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1625772452859-1c03d5bf1137",
+                rating: 4.7,
+                sold: 187
+            },
+            { 
+                id: 904, 
+                name: "CPB Foundation", 
+                price: 250, 
+                category: "cosmetics", 
+                type: "consumption",
+                luxury: false,
+                image: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9",
+                rating: 4.8,
+                sold: 256
+            },
+            { 
+                id: 905, 
+                name: "Guerlain Orchidée Cream", 
+                price: 500, 
+                category: "cosmetics", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1571781926291-c477ebfd024b",
+                rating: 4.7,
+                sold: 134
+            },
+            { 
+                id: 906, 
+                name: "Estée Lauder Set", 
+                price: 800, 
+                category: "cosmetics", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c",
+                rating: 4.8,
+                sold: 98
+            },
+
+            // ========== Fashion ==========
+            { 
+                id: 1001, 
+                name: "Chanel Classic Suit", 
+                price: 10000, 
+                category: "fashion", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1539533018447-63fcce2678e4",
+                rating: 4.9,
+                sold: 23
+            },
+            { 
+                id: 1002, 
+                name: "Hermès Scarf", 
+                price: 700, 
+                category: "fashion", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea",
+                rating: 4.8,
+                sold: 56
+            },
+            { 
+                id: 1003, 
+                name: "Cartier Love Bracelet", 
+                price: 8500, 
+                category: "fashion", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a",
+                rating: 4.9,
+                sold: 12
+            },
+            { 
+                id: 1004, 
+                name: "Louis Vuitton Speedy Bag", 
+                price: 2000, 
+                category: "fashion", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea",
+                rating: 4.7,
+                sold: 45
+            },
+            { 
+                id: 1005, 
+                name: "Tiffany Diamond Necklace", 
+                price: 15000, 
+                category: "fashion", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e",
+                rating: 5.0,
+                sold: 8,
+                badge: "Limited"
+            },
+            { 
+                id: 1006, 
+                name: "Gucci Loafers", 
+                price: 1000, 
+                category: "fashion", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1560769629-975ec94e6a86",
+                rating: 4.8,
+                sold: 67
+            },
+
+            // ========== Appliances ==========
+            { 
+                id: 1101, 
+                name: "Samsung 98\" 8K TV", 
+                price: 35000, 
+                category: "appliance", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1593784991095-a205069470b6",
+                rating: 4.9,
+                sold: 15
+            },
+            { 
+                id: 1102, 
+                name: "Sub-Zero Fridge", 
+                price: 4500, 
+                category: "appliance", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1580858953060-21c8a4a8c5e3",
+                rating: 4.8,
+                sold: 28
+            },
+            { 
+                id: 1103, 
+                name: "Dyson Air Purifier", 
+                price: 800, 
+                category: "appliance", 
+                type: "consumption",
+                luxury: false,
+                image: "https://images.unsplash.com/photo-1584473457409-ceb3f2f2a6e4",
+                rating: 4.7,
+                sold: 156
+            },
+            { 
+                id: 1104, 
+                name: "Miele Washer/Dryer Set", 
+                price: 10000, 
+                category: "appliance", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1580858953060-21c8a4a8c5e3",
+                rating: 4.9,
+                sold: 12
+            },
+            { 
+                id: 1105, 
+                name: "Sony Home Theater", 
+                price: 3500, 
+                category: "appliance", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1593784991095-a205069470b6",
+                rating: 4.8,
+                sold: 34
+            },
+            { 
+                id: 1106, 
+                name: "Wolf Cooking System", 
+                price: 4500, 
+                category: "appliance", 
+                type: "consumption",
+                luxury: true,
+                image: "https://images.unsplash.com/photo-1580858953060-21c8a4a8c5e3",
+                rating: 4.7,
+                sold: 23
+            }
+        ];
+        
+        // Initialize product display
+        function displayItems(category = 'all', searchQuery = '') {
+            productsGrid.innerHTML = '';
+            
+            const filteredItems = items.filter(item => {
+                const matchesCategory = category === 'all' || item.category === category;
+                const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+                return matchesCategory && matchesSearch;
+            });
+            
+            if (filteredItems.length === 0) {
+                productsGrid.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">No items found</p>';
+                return;
+            }
+            
+            filteredItems.forEach(item => {
+                const productCard = document.createElement('div');
+                productCard.className = `product-card ${item.type === 'investment' ? 'investment-item' : ''}`;
+                
+                // Add badge if exists
+                let badgeHtml = '';
+                if (item.badge) {
+                    badgeHtml = `<div class="product-badge">${item.badge}</div>`;
+                }
+                
+                // Add original price if exists
+                let originalPriceHtml = '';
+                if (item.originalPrice) {
+                    originalPriceHtml = `<span class="product-original-price">$${formatMoney(item.originalPrice)}</span>`;
+                }
+                
+                productCard.innerHTML = `
+                    ${badgeHtml}
+                    <div class="product-image">
+                        <img src="${item.image}" alt="${item.name}">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-category">${getCategoryName(item.category)}</div>
+                        <div class="product-name">${item.name}</div>
+                        <div class="product-price">
+                            $${formatMoney(item.price)}
+                            ${originalPriceHtml}
+                        </div>
+                        <div class="product-meta">
+                            <div class="product-rating">
+                                <i class="fas fa-star"></i> ${item.rating}
+                            </div>
+                            <div class="product-sold">Sold ${item.sold}</div>
+                        </div>
+                        <button class="buy-btn">${item.type === 'investment' ? 'Invest Now' : 'Buy Now'}</button>
+                    </div>
+                `;
+                
+                productCard.querySelector('.buy-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showPurchaseModal(item);
+                });
+                
+                productsGrid.appendChild(productCard);
+            });
+        }
+        
+        // Show purchase modal
+        function showPurchaseModal(item) {
+            if (!gameActive) {
+                showNotification('Start the game first!');
+                return;
+            }
+            
+            currentItem = item;
+            modalProductName.textContent = item.name;
+            modalProductImage.src = item.image;
+            modalProductImage.alt = item.name;
+            modalProductPrice.textContent = `$${formatMoney(item.price)}`;
+            quantityInput.value = 1;
+            updateTotalPrice();
+            purchaseModal.style.display = 'flex';
+        }
+
+        // Close purchase modal
+        function closePurchaseModal() {
+            purchaseModal.style.display = 'none';
+            currentItem = null;
+        }
+
+        // Update total price in modal
+        function updateTotalPrice() {
+            const quantity = parseInt(quantityInput.value);
+            const total = currentItem.price * quantity;
+            totalPrice.textContent = `Total: $${formatMoney(total)}`;
+        }
+
+        // Purchase item
+        function purchaseItem(item, quantity = 1) {
+            const totalCost = item.price * quantity;
+            
+            if (money < totalCost) {
+                showNotification('Insufficient funds!');
+                return;
+            }
+            
+            money -= totalCost;
+            
+            // Check for first purchase in category
+            if (!ownedCategories.has(item.category)) {
+                ownedCategories.add(item.category);
+                const bonus = money * 0.02; // 2% bonus
+                money += bonus;
+                showNotification(`Trendsetter Bonus! +2% ($${formatMoney(bonus)}) for first ${getCategoryName(item.category)} purchase`);
+                firstPurchaseInCategory = true;
+            }
+            
+            // Check for bargain (items with originalPrice)
+            if (item.originalPrice) {
+                const bargainBonus = totalCost * 0.05; // 5% bonus
+                money += bargainBonus;
+                showNotification(`Bargain Hunter Bonus! +5% ($${formatMoney(bargainBonus)}) for sale item`);
+            }
+            
+            // Check for diversification bonus (5+ categories)
+            if (ownedCategories.size >= 5 && firstPurchaseInCategory) {
+                const diversificationBonus = money * 0.05; // 5% bonus
+                money += diversificationBonus;
+                showNotification(`Diversification Bonus! +5% ($${formatMoney(diversificationBonus)}) for owning 5+ categories`);
+                firstPurchaseInCategory = false;
+            }
+            
+            // Check for liquidity crisis (cash < $1B)
+            if (money < 1000000000 && !liquidityCrisisActive) {
+                liquidityCrisisActive = true;
+                showNotification('Liquidity Crisis! Losing 2% net worth per minute until cash > $1B');
+            } else if (money >= 1000000000 && liquidityCrisisActive) {
+                liquidityCrisisActive = false;
+                showNotification('Liquidity Crisis Averted!');
+            }
+            
+            updateMoneyDisplay();
+            
+            if (item.type === 'investment') {
+                // Add to investment portfolio
+                const investment = {
+                    ...item,
+                    purchasePrice: totalCost,
+                    currentValue: totalCost,
+                    quantity: quantity,
+                    purchaseTime: new Date()
+                };
+                
+                // Check if already invested in this item
+                const existingIndex = investments.findIndex(i => i.id === item.id);
+                if (existingIndex >= 0) {
+                    investments[existingIndex].quantity += quantity;
+                    investments[existingIndex].purchasePrice += totalCost;
+                    investments[existingIndex].currentValue += totalCost;
+                } else {
+                    investments.push(investment);
+                }
+                
+                updatePortfolio();
+                showNotification(`Invested in: ${item.name} (x${quantity})`);
+            } else {
+                // Add to purchase history
+                const existingIndex = purchasedItems.findIndex(i => i.id === item.id);
+                if (existingIndex >= 0) {
+                    purchasedItems[existingIndex].quantity += quantity;
+                    purchasedItems[existingIndex].totalPrice += totalCost;
+                } else {
+                    purchasedItems.push({
+                        ...item,
+                        quantity: quantity,
+                        totalPrice: totalCost,
+                        purchaseTime: new Date()
+                    });
+                }
+                showNotification(`Purchased: ${item.name} (x${quantity})`);
+            }
+
+            // Update categories owned display
+            categoriesOwnedDisplay.textContent = ownedCategories.size;
+            
+            // Close modal after purchase
+            closePurchaseModal();
+        }
+        
+        // Update investment portfolio
+        function updatePortfolio() {
+            if (investments.length === 0) {
+                portfolioItems.innerHTML = '<p style="grid-column: 1 / -1; text-align: center;">No investments yet</p>';
+                portfolioSummary.textContent = 'Current Value: $0';
+                return;
+            }
+            
+            portfolioItems.innerHTML = '';
+            let totalInvestment = 0;
+            let totalCurrentValue = 0;
+            let hasProfitOrLoss = false;
+            let profitLossMessage = '';
+            
+            // Check for overconcentration (>30% in single investment)
+            const totalPortfolioValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
+            let overconcentration = false;
+            
+            investments.forEach(investment => {
+                const investmentPercentage = investment.currentValue / totalPortfolioValue;
+                if (investmentPercentage > 0.3) {
+                    overconcentration = true;
+                    investment.volatility *= 1.5; // Increase volatility by 50%
+                }
+            });
+            
+            if (overconcentration) {
+                showNotification('Warning: Portfolio overconcentrated (>30% in single investment). Volatility increased!');
+            }
+            
+            investments.forEach(investment => {
+                // Save previous value for comparison
+                const previousValue = investment.currentValue;
+                
+                // Random value fluctuation (based on volatility)
+                const changePercent = (Math.random() * 2 - 1) * investment.volatility;
+                const valueChange = investment.currentValue * changePercent;
+                investment.currentValue += valueChange;
+                
+                totalInvestment += investment.purchasePrice;
+                totalCurrentValue += investment.currentValue;
+                
+                const profit = investment.currentValue - investment.purchasePrice;
+                const profitPercent = (profit / investment.purchasePrice) * 100;
+                
+                const portfolioItem = document.createElement('div');
+                portfolioItem.className = 'portfolio-item';
+                
+                portfolioItem.innerHTML = `
+                    <div class="portfolio-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="portfolio-details">
+                        <div class="portfolio-name">${investment.name} (x${investment.quantity})</div>
+                        <div class="portfolio-meta">
+                            <span>Bought: $${formatMoney(investment.purchasePrice)}</span>
+                            <span>Volatility: ${(investment.volatility * 100).toFixed(1)}%</span>
+                        </div>
+                        <div class="portfolio-value">Current: $${formatMoney(investment.currentValue)}</div>
+                        <div class="portfolio-profit ${profit >= 0 ? 'profit' : 'loss'}">
+                            ${profit >= 0 ? '+' : ''}$${formatMoney(profit)} (${profitPercent.toFixed(2)}%)
+                        </div>
+                    </div>
+                `;
+                
+                portfolioItems.appendChild(portfolioItem);
+
+                // Check for significant change to show alert
+                const change = investment.currentValue - previousValue;
+                if (Math.abs(change) > investment.purchasePrice * 0.05) { // More than 5% change
+                    hasProfitOrLoss = true;
+                    const percentChange = (change / previousValue) * 100;
+                    profitLossMessage = `${investment.name}: ${change >= 0 ? '+' : ''}${percentChange.toFixed(2)}% ($${formatMoney(Math.abs(change))})`;
+                }
+            });
+            
+            const totalProfit = totalCurrentValue - totalInvestment;
+            const totalProfitPercent = (totalProfit / totalInvestment) * 100;
+            
+            portfolioSummary.innerHTML = `
+                Current Value: <span>$${formatMoney(totalCurrentValue)}</span>
+                <span class="${totalProfit >= 0 ? 'profit' : 'loss'}" style="margin-left: 10px;">
+                    ${totalProfit >= 0 ? '+' : ''}$${formatMoney(totalProfit)} (${totalProfitPercent.toFixed(2)}%)
+                </span>
+            `;
+            
+            // Update total money display
+            updateMoneyDisplay();
+
+            // Show investment alert if there was a significant change
+            if (hasProfitOrLoss) {
+                showInvestmentAlert(profitLossMessage, totalProfit >= 0);
+            }
+        }
+        
+        // Show investment alert
+        function showInvestmentAlert(message, isProfit) {
+            investmentAlert.textContent = message;
+            investmentAlert.classList.remove('loss');
+            if (!isProfit) {
+                investmentAlert.classList.add('loss');
+            }
+            investmentAlert.classList.add('show');
+            
+            setTimeout(() => {
+                investmentAlert.classList.remove('show');
+            }, 5000);
+        }
+        
+        // Update money display
+        function updateMoneyDisplay() {
+            // Calculate total investment value
+            const investmentsValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
+            
+            // Calculate luxury assets value (50% of luxury items)
+            const luxuryValue = purchasedItems
+                .filter(item => item.luxury)
+                .reduce((sum, item) => sum + item.totalPrice, 0) * 0.5;
+            
+            const cash = money;
+            const total = cash + investmentsValue + luxuryValue;
+            
+            // Apply liquidity crisis penalty if active
+            if (liquidityCrisisActive) {
+                const penalty = total * 0.02; // 2% penalty
+                money -= penalty;
+                showNotification(`Liquidity Crisis Penalty: -2% ($${formatMoney(penalty)})`);
+            }
+            
+            moneyDisplay.textContent = `$${formatMoney(total)}`;
+            cashDisplay.textContent = `$${formatMoney(cash)}`;
+            investmentDisplay.textContent = `$${formatMoney(investmentsValue)}`;
+            luxuryDisplay.textContent = `$${formatMoney(luxuryValue)}`;
+            
+            return {
+                cash,
+                investments: investmentsValue,
+                luxury: luxuryValue,
+                total
+            };
+        }
+        
+        // Show purchase history
+        function showHistory() {
+            if (purchasedItems.length === 0) {
+                historyItems.innerHTML = '<p style="text-align: center;">No purchase history</p>';
+                return;
+            }
+            
+            historyItems.innerHTML = '';
+            
+            // Sort by purchase time (newest first)
+            const sortedItems = [...purchasedItems].sort((a, b) => b.purchaseTime - a.purchaseTime);
+            
+            sortedItems.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                historyItem.innerHTML = `
+                    <div class="history-image">
+                        <img src="${item.image}" alt="${item.name}">
+                    </div>
+                    <div class="history-info">
+                        <div class="history-name">${item.name}</div>
+                        <div class="history-price">$${formatMoney(item.totalPrice)}<span class="history-quantity"> × ${item.quantity}</span></div>
+                        <div class="history-date">${formatDate(item.purchaseTime)}</div>
+                    </div>
+                `;
+                
+                historyItems.appendChild(historyItem);
+            });
+        }
+        
+        // Show notification
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Format money
+        function formatMoney(amount) {
+            return amount.toLocaleString('en-CA', { maximumFractionDigits: 0 });
+        }
+        
+        // Format date
+        function formatDate(date) {
+            return date.toLocaleString('en-CA', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        // Get category name
+        function getCategoryName(category) {
+            const names = {
+                'property': 'Real Estate',
+                'vehicle': 'Vehicles',
+                'luxury': 'Luxury',
+                'investment': 'Investments',
+                'tech': 'Technology',
+                'hobby': 'Hobbies',
+                'daily': 'Daily',
+                'food': 'Food',
+                'cosmetics': 'Cosmetics',
+                'fashion': 'Fashion',
+                'appliance': 'Appliances'
+            };
+            return names[category] || category;
+        }
+        
+        // Start the game
+        function startGame() {
+            gameActive = true;
+            gameTimeLeft = 600; // 10 minutes
+            money = 100000000000; // $100 billion
+            initialMoney = money;
+            purchasedItems = [];
+            investments = [];
+            ownedCategories = new Set();
+            liquidityCrisisActive = false;
+            firstPurchaseInCategory = true;
+            
+            // Update UI
+            updateMoneyDisplay();
+            displayItems();
+            updatePortfolio();
+            showHistory();
+            categoriesOwnedDisplay.textContent = '0';
+            
+            // Start timer
+            clearInterval(gameTimer);
+            gameTimer = setInterval(updateGameTimer, 1000);
+            
+            // Hide rules modal
+            rulesModal.style.display = 'none';
+            
+            showNotification('Game started! You have 10 minutes to grow your net worth!');
+        }
+        
+        // Update game timer
+        function updateGameTimer() {
+            gameTimeLeft--;
+            
+            const minutes = Math.floor(gameTimeLeft / 60);
+            const seconds = gameTimeLeft % 60;
+            gameTimerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Check if game over
+            if (gameTimeLeft <= 0) {
+                endGame();
+            }
+        }
+        
+        // End the game
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameTimer);
+            
+            // Calculate final score
+            const { cash, investments, luxury, total } = updateMoneyDisplay();
+            
+            // Update game over modal
+            finalScore.textContent = `$${formatMoney(total)}`;
+            finalCash.textContent = `$${formatMoney(cash)}`;
+            finalInvestments.textContent = `$${formatMoney(investments)}`;
+            finalLuxury.textContent = `$${formatMoney(luxury)}`;
+            
+            // Calculate bonuses/penalties
+            const bonuses = total - (cash + investments + luxury);
+            finalBonuses.textContent = `${bonuses >= 0 ? '+' : ''}$${formatMoney(bonuses)}`;
+            finalBonuses.className = bonuses >= 0 ? 'profit' : 'loss';
+            
+            // Show achievements
+            achievementsList.innerHTML = '';
+            
+            // Trendsetter achievement
+            if (ownedCategories.size >= 1) {
+                addAchievement('Trendsetter', `First purchase in ${ownedCategories.size} categories`);
+            }
+            
+            // Bargain Hunter achievement
+            const bargainItems = purchasedItems.filter(item => item.originalPrice).length;
+            if (bargainItems > 0) {
+                addAchievement('Bargain Hunter', `Found ${bargainItems} sale items`);
+            }
+            
+            // Diversification achievement
+            if (ownedCategories.size >= 5) {
+                addAchievement('Diversified', `Owned items in ${ownedCategories.size} categories`);
+            }
+            
+            // Investment achievements
+            if (investments.length > 0) {
+                const bestInvestment = [...investments].sort((a, b) => 
+                    (b.currentValue - b.purchasePrice) - (a.currentValue - a.purchasePrice)
+                )[0];
+                
+                const profit = bestInvestment.currentValue - bestInvestment.purchasePrice;
+                const profitPercent = (profit / bestInvestment.purchasePrice) * 100;
+                
+                addAchievement('Top Investment', 
+                    `${bestInvestment.name}: ${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%`);
+            }
+            
+            // Show game over modal
+            gameOverModal.style.display = 'flex';
+        }
+        
+        // Add achievement to game over modal
+        function addAchievement(title, description) {
+            const achievement = document.createElement('div');
+            achievement.className = 'score-detail';
+            achievement.innerHTML = `
+                <span><i class="fas fa-trophy"></i> ${title}:</span>
+                <span class="score-value">${description}</span>
+            `;
+            achievementsList.appendChild(achievement);
+        }
+        
+        // Restart the game
+        function restartGame() {
+            gameOverModal.style.display = 'none';
+            startGame();
+        }
+        
+        // Switch page
+        function switchPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+
+            // Update specific page content if needed
+            if (pageId === 'portfolio-page') {
+                updatePortfolio();
+            } else if (pageId === 'history-page') {
+                showHistory();
+            }
+        }
+        
+        // Initialize
+        function init() {
+            // Show rules modal first
+            rulesModal.style.display = 'flex';
+            
+            // Start game button
+            startGameBtn.addEventListener('click', startGame);
+            
+            // Restart game button
+            restartBtn.addEventListener('click', restartGame);
+            
+            // Display all items initially
+            displayItems();
+            
+            // Category button events
+            categoryBtns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    categoryBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    displayItems(btn.dataset.category);
+                });
+            });
+            
+            // Search input event
+            searchInput.addEventListener('input', () => {
+                const activeCategory = document.querySelector('.category-btn.active');
+                displayItems(activeCategory ? activeCategory.dataset.category : 'all', searchInput.value);
+            });
+            
+            // Navigation links
+            homeLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchPage('home-page');
+            });
+
+            portfolioLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchPage('portfolio-page');
+            });
+
+            historyLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchPage('history-page');
+            });
+
+            // Modal events
+            closeModal.addEventListener('click', closePurchaseModal);
+            window.addEventListener('click', (e) => {
+                if (e.target === purchaseModal) {
+                    closePurchaseModal();
+                }
+            });
+
+            // Quantity selector events
+            decreaseQuantity.addEventListener('click', () => {
+                const currentValue = parseInt(quantityInput.value);
+                if (currentValue > 1) {
+                    quantityInput.value = currentValue - 1;
+                    updateTotalPrice();
+                }
+            });
+
+            increaseQuantity.addEventListener('click', () => {
+                const currentValue = parseInt(quantityInput.value);
+                quantityInput.value = currentValue + 1;
+                updateTotalPrice();
+            });
+
+            quantityInput.addEventListener('change', () => {
+                if (quantityInput.value < 1) {
+                    quantityInput.value = 1;
+                }
+                updateTotalPrice();
+            });
+
+            // Confirm purchase button
+            confirmPurchase.addEventListener('click', () => {
+                if (currentItem) {
+                    const quantity = parseInt(quantityInput.value);
+                    purchaseItem(currentItem, quantity);
+                }
+            });
+            
+            // Update investment values every 5 seconds
+            setInterval(() => {
+                if (investments.length > 0 && gameActive) {
+                    updatePortfolio();
+                }
+            }, 5000);
+        }
+        
+        // Start the app
+        init();
+    </script>
+</body>
+</html>

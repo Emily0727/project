@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Public Challenges - JIMI Encryption</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 60px 0 0;
+            font-family: Arial, sans-serif;
+            background-color: #e3ebf8;
+        }
+        
+        #auth-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 20px;
+            background: linear-gradient(45deg,#032a52, #780b70);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        #user-greeting {
+            font-weight: bold;
+        }
+
+        #auth-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        #login-btn, #logout-btn {
+            padding: 5px 15px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #login-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        #logout-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        #login-btn:hover, #logout-btn:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .header {
+            background: linear-gradient(45deg,#032a52, #780b70);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+        
+        .challenge-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .challenge-box {
+            width: 300px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .challenge-box h3 {
+            margin-top: 0;
+            color: #003366;
+        }
+
+        .challenge-meta {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .challenge-content {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            overflow-wrap: break-word;
+            word-break: break-all;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+
+        .challenge-solution {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .challenge-solution input {
+            width: 92%;
+            padding: 10px;
+            margin: 0;
+            font-size: 16px;
+            border: 2px solid #003366;
+            border-radius: 5px;
+        }
+
+        .challenge-solution button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .challenge-solution button:hover {
+            background-color: #0056b3;
+        }
+
+        .solved {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+
+        .no-challenges {
+            text-align: center;
+            padding: 40px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .challenge-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="auth-bar">
+        <span id="user-greeting"></span>
+        <div class="nav-links">
+            <a href="encryption.html" class="nav-link">Encryption Tool</a>
+            <a href="#" class="nav-link" onclick="checkAuthBeforeViewSaved()">Saved Messages</a>
+        </div>
+        <div id="auth-buttons">
+            <button id="login-btn">Login</button>
+            <button id="logout-btn">Logout</button>
+        </div>
+    </div>
+    
+    <div class="header">
+        <h1>Public Decryption Challenges</h1>
+    </div>
+    
+    <div class="container">
+        <a href="encryption.html" class="back-button">Back to Encryption Tool</a>
+        
+        <div class="challenge-container" id="challenges-container">
+            <!-- Challenges will be loaded here -->
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentUser = JSON.parse(localStorage.getItem('jimiCurrentUser'));
+            const isGuest = localStorage.getItem('jimiGuestAccess') === 'true';
+            const userGreeting = document.getElementById('user-greeting');
+            const loginBtn = document.getElementById('login-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            
+            // Set initial UI state
+            if (currentUser) {
+                userGreeting.textContent = `Welcome, ${currentUser.username}`;
+                loginBtn.style.display = 'none';
+                logoutBtn.style.display = 'block';
+            } else if (isGuest) {
+                userGreeting.textContent = 'Guest User';
+                loginBtn.style.display = 'block';
+                logoutBtn.style.display = 'none';
+            } else {
+                window.location.href = 'encryptionauth.html';
+                return;
+            }
+            
+            // Event listeners
+            loginBtn.addEventListener('click', () => window.location.href = 'encryptionauth.html');
+            logoutBtn.addEventListener('click', logout);
+            
+            // Load challenges
+            loadPublicChallenges();
+        });
+
+        function logout() {
+            localStorage.removeItem('jimiCurrentUser');
+            localStorage.removeItem('jimiGuestAccess');
+            window.location.href = 'encryptionauth.html';
+        }
+
+        function checkAuthBeforeViewSaved() {
+            const currentUser = JSON.parse(localStorage.getItem('jimiCurrentUser'));
+            if (!currentUser) {
+                if (confirm("You need to login to view saved messages. Would you like to login now?")) {
+                    window.location.href = 'encryptionauth.html?redirect=saved';
+                }
+            } else {
+                window.location.href = 'encryptionsaved.html';
+            }
+        }
+
+        function formatKeyInput(event) {
+            let input = event.target;
+            input.value = input.value.toUpperCase().replace(/\s/g, '');
+            
+            if (event.data === ' ') {
+                event.preventDefault();
+            }
+        }
+
+        const charMap = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/’!?.,()*&%$#@[]{}<>-_+=~^\"'";
+
+        function convertToNumber(char) {
+            let index = charMap.indexOf(char);
+            return index !== -1 ? (index + 10).toString().padStart(2, '0') : "00";
+        }
+
+        function convertToChar(num) {
+            let index = parseInt(num) - 10;
+            return index >= 0 && index < charMap.length ? charMap[index] : " ";
+        }
+
+        function loadPublicChallenges() {
+            const challengesContainer = document.getElementById('challenges-container');
+            const allSavedMessages = JSON.parse(localStorage.getItem('savedMessages')) || [];
+            const publicChallenges = allSavedMessages.filter(msg => msg.isPublic);
+            
+            challengesContainer.innerHTML = '';
+            
+            if (publicChallenges.length === 0) {
+                challengesContainer.innerHTML = `
+                    <div class="no-challenges">
+                        <p>No public challenges available yet. Be the first to create one!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            publicChallenges.forEach((challenge, index) => {
+                const challengeBox = document.createElement('div');
+                challengeBox.className = 'challenge-box';
+                challengeBox.innerHTML = `
+                    <h3>${challenge.subject}</h3>
+                    <div class="challenge-meta">
+                        <span>Posted by: ${challenge.user}</span><br>
+                        <h3>Hint: ${challenge.hint}</h3>
+                    </div>
+                    <div class="challenge-content">
+                        <pre>${challenge.message}</pre>
+                    </div>
+                    <div class="challenge-solution">
+                        <input type="text" id="challenge-key-${index}" placeholder="Enter key to solve" oninput="formatKeyInput(event)">
+                        <button onclick="attemptChallenge(${index})">Submit Solution</button>
+                    </div>
+                `;
+                challengesContainer.appendChild(challengeBox);
+            });
+        }
+        
+        function attemptChallenge(index) {
+            const allSavedMessages = JSON.parse(localStorage.getItem('savedMessages')) || [];
+            const publicChallenges = allSavedMessages.filter(msg => msg.isPublic);
+            const challenge = publicChallenges[index];
+            
+            if (!challenge) {
+                alert("Challenge not found");
+                return;
+            }
+            
+            const keyInput = document.getElementById(`challenge-key-${index}`).value;
+            if (!keyInput) {
+                alert("Please enter a key");
+                return;
+            }
+            
+            // Try to decrypt with the provided key
+            try {
+                let keySum = keyInput.split('')
+                    .map(convertToNumber)
+                    .reduce((a, b) => a + parseInt(b), 0);
+
+                let decryptedNum = BigInt(
+                    challenge.message.split('')
+                        .map(c => (c.charCodeAt(0) - 65))
+                        .join('')
+                ) / BigInt(keySum);
+
+                let decryptedText = decryptedNum.toString()
+                    .match(/.{1,2}/g)
+                    .map(convertToChar)
+                    .join('');
+                
+                // Check if decrypted text matches original message
+                if (decryptedText === challenge.originalMessage) {
+                    const challengeBox = document.querySelectorAll('.challenge-box')[index];
+                    challengeBox.classList.add('solved');
+                    challengeBox.querySelector('.challenge-content').innerHTML = `
+                        <p><strong>Solved!</strong></p>
+                        <pre>${challenge.originalMessage}</pre>
+                    `;
+                    
+                } else {
+                    alert("Incorrect key. Keep trying!");
+                }
+            } catch (e) {
+                alert("Decryption failed. Please check your key.");
+                console.error(e);
+            }
+        }
+    </script>
+</body>
+</html>

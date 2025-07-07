@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Simulator: The Game of Choices</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #ff9f1c;
+            --dark: #2b2d42;
+            --light: #edf2f4;
+            --success: #2ec4b6;
+            --danger: #e71d36;
+            --warning: #ff9f1c;
+            --info: #4a6fa5;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1a1a2e;
+            color: var(--light);
+            background-image: radial-gradient(circle at center, #2b2d42 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 20px;
+        }
+        
+        .panel {
+            background: rgba(43, 45, 66, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        .rules {
+            grid-column: 2;
+            grid-row: 2;
+        }
+        
+        .status {
+            grid-column: 2;
+            grid-row: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .buttons {
+            grid-column: 1;
+            grid-row: 2;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .market {
+            grid-column: 1;
+            grid-row: 1;
+        }
+        
+        h1, h2, h3 {
+            font-family: 'Press Start 2P', cursive;
+            color: var(--secondary);
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        h1 {
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #fff;
+            text-shadow: 0 0 10px var(--secondary), 0 0 20px var(--secondary);
+        }
+        
+        h2 {
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 10px;
+        }
+        
+        button {
+            padding: 12px;
+            background: linear-gradient(145deg, var(--primary), #3a5a80);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+        
+        button:hover {
+            background: linear-gradient(145deg, #5a7fa5, #4a6fa5);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        .orange {
+            color: var(--warning);
+            font-weight: bold;
+        }
+        
+        .red {
+            color: var(--danger);
+            font-weight: bold;
+        }
+        
+        .green {
+            color: var(--success);
+            font-weight: bold;
+        }
+        
+        .blue {
+            color: #64b5f6;
+            font-weight: bold;
+        }
+        
+        .bold {
+            font-weight: bold;
+        }
+        
+        .event {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(233, 196, 106, 0.1);
+            border-left: 4px solid var(--warning);
+            border-radius: 0 8px 8px 0;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { background-color: rgba(233, 196, 106, 0.1); }
+            50% { background-color: rgba(233, 196, 106, 0.2); }
+            100% { background-color: rgba(233, 196, 106, 0.1); }
+        }
+        
+        .character-img-container {
+            width: 250px;
+            height: 250px;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .spacer {
+            width: 10px;
+            height: 10px;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .character-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 10px;
+            border: 3px solid var(--secondary);
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 20px rgba(255, 159, 28, 0.3);
+        }
+        
+        .character-label {
+            margin-top: 10px;
+            font-weight: bold;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            color: var(--secondary);
+            text-align: center;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(145deg, #2b2d42, #1a1a2e);
+            margin: 10% auto;
+            padding: 25px;
+            border: 2px solid var(--secondary);
+            border-radius: 15px;
+            width: 80%;
+            max-width: 500px;
+            box-shadow: 0 0 30px rgba(255, 159, 28, 0.5);
+            animation: modalAppear 0.4s ease-out;
+        }
+        
+        @keyframes modalAppear {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+        
+        .close:hover {
+            color: var(--danger);
+            cursor: pointer;
+        }
+        
+        .option-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            gap: 15px;
+        }
+        
+        .option-button {
+            padding: 12px 20px;
+            min-width: 120px;
+            flex: 1;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        #option1 {
+            background: linear-gradient(145deg, var(--success), #1e9c8c);
+        }
+        
+        #option2 {
+            background: linear-gradient(145deg, var(--danger), #c71d36);
+        }
+        
+        #option1:hover {
+            background: linear-gradient(145deg, #3ed4b6, #2ec4b6);
+        }
+        
+        #option2:hover {
+            background: linear-gradient(145deg, #f72d46, #e71d36);
+        }
+        
+        #input-field {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        #input-field:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 10px rgba(255, 159, 28, 0.5);
+        }
+        
+        .progress-container {
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: linear-gradient(90deg, var(--secondary), #ffbf69);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        
+        .status-label {
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        
+        .status-value {
+            font-weight: bold;
+        }
+        
+        .market-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary);
+        }
+        
+        .market-item:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted var(--secondary);
+            cursor: help;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--dark);
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            border: 1px solid var(--secondary);
+        }
+        
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+            }
+            
+            .rules {
+                grid-column: 1;
+                grid-row: 1;
+            }
+            
+            .status {
+                grid-column: 1;
+                grid-row: 2;
+            }
+            
+            .buttons {
+                grid-column: 1;
+                grid-row: 3;
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .market {
+                grid-column: 1;
+                grid-row: 4;
+            }
+            
+            button {
+                font-size: 0.8rem;
+                padding: 10px 5px;
+            }
+        }
+        
+        /* Animation for money changes */
+        @keyframes moneyChange {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .money-change {
+            animation: moneyChange 0.5s ease;
+        }
+        
+        
+        
+        /* Special styling for baby status */
+        .baby-status {
+            background: rgba(46, 196, 182, 0.1);
+            border-left: 4px solid var(--success);
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        /* Styling for the step counter */
+        #step {
+            color: var(--secondary);
+            font-size: 1.5rem;
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <h1>LIFE SIMULATOR</h1>
+    
+    <div class="container">
+        <div class="panel market">
+            <h2>Character Status</h2>
+            <div id="character-status" class="status-container"></div>
+            
+            <h2 style="margin-top: 20px;">Market Changes</h2>
+            <div id="market-changes" class="market-changes"></div>
+            
+            <h2 style="margin-top: 20px;">Market Portfolio</h2>
+            <div id="market-status" class="market-status"></div>
+        </div>
+        
+
+        <div class="panel status">
+            <h2>Step <span id="step">0</span> of life</h2>
+            <div class="progress-container" style="margin-top: 20px;">
+                <div class="progress-bar" id="life-progress" style="width: 0%"></div>
+            </div>
+            <div style="text-align: center; margin-top: 5px; font-size: 0.8rem;">
+                Life Progress: <span id="progress-text">0</span>%
+            </div>
+            <div id="option-result"></div>
+            <div id="event-display" class="event"></div>
+            <div id="live-updates"></div>
+            <div class="character-img-container">
+                <img src="0NormalMan.png" alt="Character" class="character-img" id="character-image">
+                <div class="character-label">YOUR AVATAR</div>
+            </div>
+
+            <div class="spacer"></div>
+
+            <div class="panel buttons">
+                <button onclick="takeAction(1)"><span class="tooltip"><b>🎓  Education</b><span class="tooltiptext">Cost $70, increases job chances</span></button>
+                <button onclick="takeAction(2)"><span class="tooltip"><b>💼 Investment</b><span class="tooltiptext">Property gives rent, stocks fluctuate</span></button>
+                <button onclick="takeAction(3)"><span class="tooltip"><b>💰 Sell Out</b><span class="tooltiptext">Cash out properties or stocks</span></button>
+                <button onclick="takeAction(4)"><span class="tooltip"><b>💍 Marriage</b><span class="tooltiptext">Get $50 but +$5 living cost</span></button>
+                <button onclick="takeAction(5)"><span class="tooltip"><b>👔 Employment</b><span class="tooltiptext">Better job opportunities with education</span></button>
+                <button onclick="takeAction(6)"><span class="tooltip"><b>🎲 Gamble</b><span class="tooltiptext">Bet on odd/even for rewards</span></button>
+                <button onclick="takeAction(7)"><span class="tooltip"><b>👕 Shopping</b><span class="tooltiptext">Buy clothes, prices increase</span></button>
+                <button onclick="takeAction(8)"><span class="tooltip"><b>⏭️ Skip</b><span class="tooltiptext">Pass time without events</span></button>
+            </div>
+            
+        </div>
+
+        
+
+        
+    </div>
+
+    <!-- Modal for options -->
+    <div id="optionModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="modal-text" style="margin-bottom: 20px;"></p>
+            <div class="option-buttons">
+                <button class="option-button" id="option1">Option 1</button>
+                <button class="option-button" id="option2">Option 2</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for input -->
+    <div id="inputModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="input-text"></p>
+            <input type="text" id="input-field">
+            <button onclick="submitInput()" style="width: 100%; margin-top: 10px; background: var(--secondary);">Submit</button>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        const gameState = {
+            isAlive: true,
+            name: "",
+            money: 0,
+            stepOfLife: 0,
+            propWorth: 120,
+            property: 0,
+            livingMoney: 10,
+            income: 0,
+            married: false,
+            education: 0,
+            luckyness: 7,
+            rent: 0,
+            rentDeduction: 1,
+            incomeDeduction: 1,
+            cloth: 0,
+            clothWorth: 8,
+            hasBaby: false,
+            guilty: false,
+            AG: 0, // Stock A owned
+            BG: 0, // Stock B owned
+            AM: 0, // Stock A money spent
+            BM: 0, // Stock B money spent
+            AW: 20, // Stock A worth
+            BW: 40, // Stock B worth
+            currentImage: "0NormalMan.png",
+            baby: null
+        };
+        function showInputModal(text, callback) {
+            const modal = document.getElementById('inputModal');
+            const inputText = document.getElementById('input-text');
+            const inputField = document.getElementById('input-field');
+            const submitBtn = document.getElementById('input-submit');
+            const closeBtn = modal.querySelector('.close');
+
+            // Set modal content
+            inputText.textContent = text;
+            inputField.value = '';
+            
+            // Show modal
+            modal.style.display = 'block';
+            inputField.focus();
+
+            // Clear previous event listeners
+            const newSubmit = () => {
+                modal.style.display = 'none';
+                callback(inputField.value);
+            };
+            const closeModal = () => {
+                modal.style.display = 'none';
+                callback(null);
+            };
+
+            // Set new event listeners
+            submitBtn.onclick = newSubmit;
+            inputField.onkeypress = (e) => {
+                if (e.key === 'Enter') newSubmit();
+            };
+            closeBtn.onclick = closeModal;
+        }
+
+
+        // Baby class
+        class Baby {
+            constructor() {
+                this.isAlive = true;
+                this.age = 0;
+                this.sadness = 0;
+            }
+
+            live() {
+                this.age++;
+            }
+
+            check() {
+                let message = "";
+                let happen = false;
+                const expense = this.age * 10;
+                
+                switch(this.age) {
+                    case 3: 
+                        message = `At age 3, your child was diagnosed with a hereditary pulmonary disease.\n\nTreatment costs $${expense}. Will you pay for it?`;
+                        happen = true;
+                        break;
+                    case 6: 
+                        message = `At age 6, your child shows exceptional musical talent.\n\nAdvanced classes cost $${expense}. Will you enroll them?`;
+                        happen = true;
+                        break;
+                    case 12: 
+                        message = `At age 12, your child excels in sports.\n\nTravel team expenses: $${expense}. Will you support this?`;
+                        happen = true;
+                        break;
+                    case 16: 
+                        message = `At age 16, your child wants to start a business.\n\nStartup costs: $${expense}. Will you invest?`;
+                        happen = true;
+                        break;
+                    case 18: 
+                        message = `At age 18, your child got into an Ivy League school!\n\nTuition + expenses: $${expense}. Will you pay?`;
+                        happen = true;
+                        break;
+                }
+                
+                if (happen) {
+                    message += `\n\nRejecting will increase sadness (Current: ${this.sadness}/3).\nAt 3 sadness, YOUR CHILD WILL DIE.`;
+                    
+                    showOptionModal(message, "Yes, Pay", "No, Reject", (decision) => {
+                        if (decision === 2) { // No
+                            this.sadness++;
+                            showMessageModal(`Your child's sadness increased to ${this.sadness}/3`);
+                        }
+                        
+                        if (this.sadness > 2) {
+                            this.isAlive = false;
+                            showMessageModal("Your child became depressed and died from neglect.");
+                            gameState.hasBaby = false;
+                        }
+                    });
+                }
+            }
+        }
+
+        // Initialize game
+        function initGame() {
+            const name = prompt("Enter your character's name:") || "Player";
+            gameState.name = name;
+            gameState.money = Math.floor(Math.random() * 200) + 101;
+            gameState.stepOfLife = 0;
+            
+            if (name.toLowerCase() === "ilovemylife") {
+                gameState.money = 10010;
+                showMessageModal("Cheat activated! You start with $10,010.");
+            }
+            
+            showMessageModal(`WELCOME TO LIFE SIMULATOR, ${name.toUpperCase()}!\n\nYou will experience 30 steps of life.\n\nGoal: Survive with maximum wealth or reach step 30.\n\nEach step presents 8 choices that shape your destiny.`);
+            
+            updateUI();
+        }
+
+        // Update character image based on current state
+        function updateCharacterImage() {
+            const imgElement = document.getElementById('character-image');
+            imgElement.src = gameState.currentImage;
+            
+            // Add animation when image changes
+            imgElement.style.animation = 'none';
+            imgElement.offsetHeight; // Trigger reflow
+            imgElement.style.animation = 'moneyChange 0.5s ease';
+        }
+
+        // Update all UI elements
+        function updateUI() {
+            // Update progress bar
+            const progress = (gameState.stepOfLife / 30) * 100;
+            document.getElementById('life-progress').style.width = `${progress}%`;
+            document.getElementById('progress-text').textContent = Math.min(100, Math.round(progress));
+            
+            document.getElementById('step').textContent = gameState.stepOfLife;
+            document.getElementById('character-status').innerHTML = generateCharacterStatus();
+            
+            // Calculate rent
+            gameState.rent = gameState.property * (gameState.propWorth / 6);
+            
+            // Update money based on income, rent, and living expenses
+            const incomeEarned = gameState.income * gameState.incomeDeduction;
+            const rentEarned = gameState.rent * gameState.rentDeduction;
+            const propertyTax = gameState.property * 10;
+            
+            const oldMoney = gameState.money;
+            gameState.money += incomeEarned + rentEarned;
+            gameState.money -= gameState.livingMoney + propertyTax;
+            
+            // Add money change animation if significant change
+            if (Math.abs(gameState.money - oldMoney) > 50) {
+                document.getElementById('character-status').classList.add('money-change');
+                setTimeout(() => {
+                    document.getElementById('character-status').classList.remove('money-change');
+                }, 500);
+            }
+            
+            let liveUpdates = `<div class="status-item">
+                <span class="status-label">Income:</span>
+                <span class="status-value green">+$${incomeEarned}</span>
+            </div>`;
+            
+            if (gameState.property > 0) {
+                liveUpdates += `<div class="status-item">
+                    <span class="status-label">Rent Income:</span>
+                    <span class="status-value green">+$${rentEarned}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Property Tax:</span>
+                    <span class="status-value red">-$${propertyTax}</span>
+                </div>`;
+            }
+            
+            if (gameState.hasBaby && gameState.baby && gameState.baby.isAlive) {
+                const babyMoney = Math.floor(gameState.money / 10);
+                liveUpdates += `<div class="status-item baby-status">
+                    <span class="status-label">Child expense:</span>
+                    <span class="status-value green">+$${babyMoney}</span>
+                </div>`;
+                gameState.money += babyMoney;
+            }
+            
+            liveUpdates += `<div class="status-item">
+                <span class="status-label">Living Costs:</span>
+                <span class="status-value red">-$${gameState.livingMoney}</span>
+            </div>`;
+            
+            document.getElementById('live-updates').innerHTML = liveUpdates;
+            document.getElementById('market-changes').innerHTML = setPropWorth();
+            document.getElementById('market-status').innerHTML = generateMarketStatus();
+            
+            // Update character image
+            updateCharacterImage();
+            
+            // Check if game over
+            if (gameState.money <= 0) {
+                showMessageModal(`GAME OVER!\n\nYou ran out of money at step ${gameState.stepOfLife}.\n\n${gameState.name}'s life ended in poverty.`);
+                return;
+            }
+            
+            if (gameState.stepOfLife >= 30) {
+                showMessageModal(`CONGRATULATIONS!\n\nYou completed 30 steps of life with $${gameState.money}.\n\nFinal question...`);
+                
+                showOptionModal("Are you HAPPY with how you lived your life?", "YES", "NO", (decision) => {
+                    if (decision === 1) {
+                        showMessageModal("TRUE SUCCESS!\n\nYou found happiness in your journey.\n\nYOU WON THE GAME OF LIFE");
+                    } else {
+                        showMessageModal("PHYRIC VICTORY...\n\nWealth without happiness is empty.\n\nYOU LOST WHAT MATTERED MOST");
+                    }
+                });
+                return;
+            }
+            
+            // Clear deductions for next turn
+            gameState.incomeDeduction = 1;
+            gameState.rentDeduction = 1;
+        }
+
+        // Generate character status HTML
+        function generateCharacterStatus() {
+            let status = `
+                <div class="status-item">
+                    <span class="status-label">Name:</span>
+                    <span class="status-value">${gameState.name}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Money:</span>
+                    <span class="status-value orange">$${gameState.money}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Married:</span>
+                    <span class="status-value">${gameState.married ? '✅' : '❌'}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Education:</span>
+                    <span class="status-value">${gameState.education} year${gameState.education !== 1 ? 's' : ''}</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Income:</span>
+                    <span class="status-value">$${gameState.income}/step</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Living Cost:</span>
+                    <span class="status-value">$${gameState.livingMoney}/step</span>
+                </div>`;
+            
+            if (gameState.hasBaby && gameState.baby) {
+                status += `
+                <div class="status-item baby-status">
+                    <span class="status-label">Child:</span>
+                    <span class="status-value">Age ${gameState.baby.age} (Sadness: ${gameState.baby.sadness}/3)</span>
+                </div>`;
+            }
+            
+            return status;
+        }
+
+
+        // Generate market status HTML
+        function generateMarketStatus() {
+            let status = `
+                <div class="market-item">
+                    <div class="status-label">🏠 Property</div>
+                    <div>Owned: ${gameState.property}</div>
+                    <div>Value: <span class="orange">$${gameState.propWorth}</span></div>
+                    <div>Rent: <span class="green">$${Math.floor(gameState.propWorth / 6)}</span></div>
+                </div>
+                <div class="market-item">
+                    <div class="status-label">📈 Stock A</div>
+                    <div>Shares: ${gameState.AG}</div>
+                    <div>Value: <span class="orange">$${gameState.AW}</span></div>
+                    <div>Invested: <span class="blue">$${(gameState.AM * -1)}</span></div>
+                </div>
+                <div class="market-item">
+                    <div class="status-label">📊 Stock B</div>
+                    <div>Shares: ${gameState.BG}</div>
+                    <div>Value: <span class="orange">$${gameState.BW}</span></div>
+                    <div>Invested: <span class="blue">$${(gameState.BM * -1)}</span></div>
+                </div>
+                <div class="market-item">
+                    <div class="status-label">👕 Clothing</div>
+                    <div>Owned: ${gameState.cloth}</div>
+                    <div>Next: <span class="orange">$${gameState.clothWorth}</span></div>
+                </div>`;
+            
+            return status;
+        }
+
+        // Set property and stock worth (market changes)
+        function setPropWorth() {
+            let market = "";
+            const change = Math.floor(Math.random() * 12) + 1;
+            const change1 = Math.floor(Math.random() * 10) + 1;
+            const change2 = Math.floor(Math.random() * 10) + 1;
+            
+            market += "<div class='market-item'><b>MARKET FLUCTUATIONS</b><br>";
+            
+            if (change > 6) {
+                gameState.propWorth += change * 4;
+                market += `🏠 <b>Property</b> <span class="green">↑ +$${change * 4}</span>`;
+            } else {
+                if ((gameState.propWorth - change * 4) > 0) {
+                    gameState.propWorth -= change * 4;
+                    market += `🏠 <b>Property</b> <span class="red">↓ -$${change * 4}</span>`;
+                } else {
+                    market += `🏠 <b>Property</b> unchanged`;
+                }
+            }
+            
+            market += "<br>";
+            
+            if (change1 % 2 === 0) {
+                market += `📈 <b>Stock A</b> <span class="green">↑ +$${change1}</span>`;
+                gameState.AW += change1;
+            } else {
+                if ((gameState.AW - change1) > 0) {
+                    market += `📈 <b>Stock A</b> <span class="red">↓ -$${change1}</span>`;
+                    gameState.AW -= change1;
+                } else {
+                    market += `📈 <b>Stock A</b> unchanged`;
+                }
+            }
+            
+            market += "<br>";
+            
+            if (change2 % 2 === 0) {
+                market += `📊 <b>Stock B</b> <span class="green">↑ +$${change2 * 3}</span>`;
+                gameState.BW += change2 * 3;
+            } else {
+                if ((gameState.BW - (change2 * 3)) > 0) {
+                    market += `📊 <b>Stock B</b> <span class="red">↓ -$${change2 * 3}</span>`;
+                    gameState.BW -= change2 * 3;
+                } else {
+                    market += `📊 <b>Stock B</b> unchanged`;
+                }
+            }
+            
+            market += "</div>";
+            
+            return market;
+        }
+
+        // Handle player actions
+        function takeAction(actionNum) {
+            let message = "";
+            
+            switch(actionNum) {
+                case 1: // Education
+                    gameState.currentImage = `${gameState.cloth}EducatedMan.png`;
+                    if (gameState.money >= 70) {
+                        message = `<div class="status-item">
+                            <span class="status-label">Education:</span>
+                            <span class="status-value red">-$${70}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-value">🎓 Education increased to ${gameState.education + 1} years!</span>
+                        </div>`;
+                        gameState.money -= 70;
+                        gameState.education++;
+                        gameState.luckyness = 8;
+                    } else {
+                        message = "<div class='status-item'><span class='status-value red'>Insufficient funds for education!</span></div>";
+                    }
+                    event();
+                    break;
+                    
+                case 2: // Investment
+                    showOptionModal(
+                        "Choose investment type:\n\n🏠 Property: Steady rental income\n📈 Stocks: Higher risk/reward",
+                        "🏠 Property",
+                        "📈 Stocks",
+                        (decision) => {
+                            console.log("Decision:", decision);
+                            if (decision === 1) { // Property
+                                gameState.currentImage = `${gameState.cloth}PropertyMan.png`;
+                                if (gameState.money >= gameState.propWorth) {
+                                    gameState.money -= gameState.propWorth;
+                                    gameState.property++;
+                                    document.getElementById('option-result').innerHTML = 
+                                        `<div class="status-item">
+                                            <span class="status-label">Property Purchase:</span>
+                                            <span class="status-value red">-$${gameState.propWorth}</span>
+                                        </div>
+                                        <div class="status-item">
+                                            <span class="status-value">🏠 New property acquired!</span>
+                                        </div>`;
+                                } else {
+                                    document.getElementById('option-result').innerHTML = 
+                                        "<div class='status-item'><span class='status-value red'>Insufficient funds for property!</span></div>";
+                                }
+                                event();
+                                processTurn(actionNum);
+                            } else if(decision === 2) { // Stocks
+                                gameState.currentImage = `${gameState.cloth}StockMan.png`;
+                                console.log("Stock pressed");
+                                showOptionModal(
+                                    "Choose stock type:\n\n📈 Stock A: Stable, lower returns\n📊 Stock B: Volatile, higher potential",
+                                    "📈 Stock A",
+                                    "📊 Stock B",
+                                    (stockChoice) => {
+                                        console.log("stockChoice:", decision);
+                                                if (stockChoice === 1) { // Stock A
+                                                    showInputModal(
+                                                    "Enter number of shares to purchase:",
+                                                    (amount) => {
+                                                    const num = parseInt(amount) || 0;
+                                                    if (gameState.money < gameState.AW * num) {
+                                                        document.getElementById('option-result').innerHTML = 
+                                                            "<div class='status-item'><span class='status-value red'>Insufficient funds for Stock A!</span></div>";
+                                                    } else if (num <= 0) {
+                                                        document.getElementById('option-result').innerHTML = 
+                                                            "<div class='status-item'><span class='status-value red'>Please enter a valid number!</span></div>";
+                                                    } else {
+                                                        document.getElementById('option-result').innerHTML = 
+                                                            `<div class="status-item">
+                                                                <span class="status-label">Stock A Purchase:</span>
+                                                                <span class="status-value red">-$${gameState.AW * num}</span>
+                                                            </div>
+                                                            <div class="status-item">
+                                                                <span class="status-value">📈 Bought ${num} shares of Stock A!</span>
+                                                            </div>`;
+                                                        gameState.money -= gameState.AW * num;
+                                                        gameState.AG += num;
+                                                        gameState.AM += gameState.AW * num;
+                                                    }
+                                                    })
+                                                } else { // Stock B
+                                                    showInputModal(
+                                                    "Enter number of shares to purchase:",
+                                                    (amount) => {
+                                                    const num = parseInt(amount) || 0;
+                                                    if (gameState.money < gameState.BW * num) {
+                                                        document.getElementById('option-result').innerHTML = 
+                                                            "<div class='status-item'><span class='status-value red'>Insufficient funds for Stock B!</span></div>";
+                                                    } else if (num <= 0) {
+                                                        document.getElementById('option-result').innerHTML = 
+                                                            "<div class='status-item'><span class='status-value red'>Please enter a valid number!</span></div>";
+                                                    } else {
+                                                        document.getElementById('option-result').innerHTML = 
+                                                            `<div class="status-item">
+                                                                <span class="status-label">Stock B Purchase:</span>
+                                                                <span class="status-value red">-$${gameState.BW * num}</span>
+                                                            </div>
+                                                            <div class="status-item">
+                                                                <span class="status-value">📊 Bought ${num} shares of Stock B!</span>
+                                                            </div>`;
+                                                        gameState.money -= gameState.BW * num;
+                                                        gameState.BG += num;
+                                                        gameState.BM += gameState.BW * num;
+                                                    }
+                                                })
+                                                   
+                                                
+                                                event();
+                                                processTurn(actionNum);
+                                            }
+                                        ;
+                                    }
+                                );
+                            }
+                        }
+                    );
+                    break;
+
+                case 3: // Sell Out
+                    gameState.currentImage = `${gameState.cloth}SellingMan.png`;
+                    showOptionModal(
+                        "Choose asset to sell:",
+                        "🏠 Property",
+                        "📈 Stocks",
+                        (decision) => {
+                            if (decision === 1) { // Property
+                                if (gameState.property >= 1) {
+                                    gameState.property--;
+                                    gameState.money += gameState.propWorth;
+                                    document.getElementById('option-result').innerHTML = 
+                                        `<div class="status-item">
+                                            <span class="status-label">Property Sold:</span>
+                                            <span class="status-value green">+$${gameState.propWorth}</span>
+                                        </div>`;
+                                } else {
+                                    document.getElementById('option-result').innerHTML = 
+                                        "<div class='status-item'><span class='status-value red'>No properties to sell!</span></div>";
+                                }
+                            } else { // Stocks
+                                showOptionModal(
+                                    "Choose stock to sell:",
+                                    "📈 Stock A",
+                                    "📊 Stock B",
+                                    (stockChoice) => {
+                                        showInputModal(
+                                            "Enter number of shares to sell:",
+                                            (amount) => {
+                                                const num = parseInt(amount) || 0;
+                                                
+                                                if (stockChoice === 1) { // Stock A
+                                                    if (gameState.AG < num) {
+                                                        document.getElementById('option-result').innerHTML = 
+                                                            "<div class='status-item'><span class='status-value red'>Not enough Stock A shares!</span></div>";
+                                                    } else {
+                                                        document.getElementById('option-result').innerHTML = 
+                                                            `<div class="status-item">
+                                                                <span class="status-label">Stock A Sold:</span>
+                                                                <span class="status-value green">+$${gameState.AW * num}</span>
+                                                            </div>`;
+                                                        gameState.money += gameState.AW * num;
+                                                        gameState.AG -= num;
+                                                        gameState.AM = Math.max(0, gameState.AM - (gameState.AW * num));
+                                                    }
+                                                } else { // Stock B
+                                                    if (gameState.BG < num) {
+                                                        document.getElementById('option-result').innerHTML = 
+                                                            "<div class='status-item'><span class='status-value red'>Not enough Stock B shares!</span></div>";
+                                                    } else {
+                                                        document.getElementById('option-result').innerHTML = 
+                                                            `<div class="status-item">
+                                                                <span class="status-label">Stock B Sold:</span>
+                                                                <span class="status-value green">+$${gameState.BW * num}</span>
+                                                            </div>`;
+                                                        gameState.money += gameState.BW * num;
+                                                        gameState.BG -= num;
+                                                        gameState.BM = Math.max(0, gameState.BM - (gameState.BW * num));
+                                                    }
+                                                }
+                                                
+                                                processTurn(actionNum);
+                                            }
+                                        );
+                                    }
+                                );
+                                return;
+                            }
+                            
+                            processTurn(actionNum);
+                        }
+                    );
+                    event();
+                    return;
+                    
+                case 4: // Marriage
+                    gameState.currentImage = `${gameState.cloth}MarriedMan.png`;
+                    if (!gameState.married) {
+                        gameState.money += 50;
+                        gameState.livingMoney += 5;
+                        gameState.married = true;
+                        message = `<div class="status-item">
+                            <span class="status-label">Marriage Bonus:</span>
+                            <span class="status-value green">+$${50}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-value">💍 You got married! (+$5 living cost)</span>
+                        </div>`;
+                    } else {
+                        message = "<div class='status-item'><span class='status-value red'>Already married!</span></div>";
+                    }
+                    event();
+                    break;
+                    
+                case 5: // Employment
+                    gameState.currentImage = `${gameState.cloth}WorkingMan.png`;
+                    const job = Math.floor(Math.random() * 9) + 1;
+                    if (job <= gameState.luckyness) {
+                        gameState.income = job * (2 + gameState.education);
+                        message = `<div class="status-item">
+                            <span class="status-value">👔 New job paying <span class="green">$${gameState.income}/step</span>!</span>
+                        </div>`;
+                    } else {
+                        message = "<div class='status-item'><span class='status-value red'>Job search failed!</span></div>";
+                        gameState.income = 0;
+                    }
+                    event();
+                    break;
+                    
+                case 6: // Gamble
+                    gameState.currentImage = `${gameState.cloth}GambleMan.png`;
+                    showInputModal(
+                        "Enter amount to gamble:",
+                        (gambleAmount) => {
+                            let prize = parseInt(gambleAmount) || 0;
+                            
+                            while (gameState.money < prize) {
+                                showMessageModal("You don't have enough money!");
+                                prize = parseInt(prompt("Enter a valid amount to gamble:")) || 0;
+                            }
+                            
+                            const dice = Math.floor(Math.random() * 6) + 1;
+                            
+                            showOptionModal(
+                                `Gambling $${prize}\n\nPredict dice roll (1-6):`,
+                                "EVEN",
+                                "ODD",
+                                (guess) => {
+                                    showMessageModal(`🎲 The dice shows... ${dice}!`);
+                                    
+                                    const isOdd = dice % 2 === 1;
+                                    
+                                    if ((guess === 1 && !isOdd) || (guess === 2 && isOdd)) {
+                                        document.getElementById('option-result').innerHTML = 
+                                            `<div class="status-item">
+                                                <span class="status-label">Gambling Win:</span>
+                                                <span class="status-value green">+$${prize}</span>
+                                            </div>`;
+                                        gameState.money += prize;
+                                    } else {
+                                        document.getElementById('option-result').innerHTML = 
+                                            `<div class="status-item">
+                                                <span class="status-label">Gambling Loss:</span>
+                                                <span class="status-value red">-$${prize}</span>
+                                            </div>`;
+                                        gameState.money -= prize;
+                                    }
+                                    
+                                    processTurn(actionNum);
+                                }
+                            );
+                        }
+                    );
+                    event();
+                    return;
+                    
+                case 7: // Shopping Cloth
+                    if (gameState.money >= gameState.clothWorth) {
+                        gameState.cloth++;
+                        gameState.money -= gameState.clothWorth;
+                        
+                        if (gameState.cloth === 7) {
+                            message = "<div class='status-item'><span class='status-value'>👕 Last basic clothing item purchased!</span></div>";
+                        } else if (gameState.cloth === 8) {
+                            gameState.clothWorth = 2;
+                            message = "<div class='status-item'><span class='status-value'>🐱 Bonus Scratch Cat outfit unlocked!</span></div>";
+                        } else if (gameState.cloth === 9) {
+                            gameState.cloth = 0;
+                            message = "<div class='status-item'><span class='status-value'>👕 Clothing collection reset!</span></div>";
+                        } else {
+                            message = `<div class="status-item">
+                                <span class="status-label">Clothing Purchase:</span>
+                                <span class="status-value red">-$${gameState.clothWorth}</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-value">👕 New clothing item! (${gameState.cloth}/8)</span>
+                            </div>`;
+                        }
+                        
+                        gameState.clothWorth *= 2;
+                        gameState.currentImage = `${gameState.cloth}NormalMan.png`;
+                    } else {
+                        message = "<div class='status-item'><span class='status-value red'>Insufficient funds for clothing!</span></div>";
+                    }
+                    event();
+                    break;
+                    
+                case 8: // Skip
+                    gameState.currentImage = `${gameState.cloth}NormalMan.png`;
+                    console.log("Skip!");
+                    message = "<div class='status-item'><span class='status-value'>⏭️ Time passes without changes...</span></div>";
+                    break;
+            }
+            
+            document.getElementById('option-result').innerHTML = message;
+            processTurn(actionNum);
+        }
+
+        // Process a turn after an action
+        function event(){
+            // Handle random event
+            const event = randomEvent();
+            document.getElementById('event-display').innerHTML = 
+                `<div class="status-item">
+                    <span class="status-label red">EVENT:</span>
+                    <span class="status-value">${event}</span>
+                </div>`;
+        }
+
+        function processTurn(actionNum) {
+            
+            
+            // Handle guilty status (murder chance)
+            if (gameState.guilty) {
+                const unfortune = Math.floor(Math.random() * 5) + 1;
+                if (unfortune === 3) {
+                    showOptionModal(
+                        "🚨 YOU GOT CAUGHT BY POLICE! 🚨\n\nChoose your fate:",
+                        "💰 Pay $1000 Fine",
+                        "⏳ Serve 5 Steps in Jail",
+                        (decision) => {
+                            if (decision === 1) {
+                                gameState.money -= 1000;
+                                showMessageModal("Paid $1000 fine. You're free but poorer.");
+                            } else if (decision === 2) {
+                                gameState.stepOfLife += 5;
+                                showMessageModal("Served 5 steps in jail. Time passed quickly.");
+                            }
+                            gameState.guilty = false;
+                            continueTurn();
+                        }
+                    );
+                    return;
+                }
+            }
+            
+            // Handle baby creation
+            if ((gameState.stepOfLife >= 10) && (gameState.stepOfLife < 20) && (!gameState.hasBaby)) {
+                showOptionModal(
+                    "👶 Would you like to have a child?\n\nChildren provide 10% income bonus each step,\nbut require financial support at key life stages.",
+                    "Yes, Have Child",
+                    "No, Remain Childless",
+                    (decision) => {
+                        if (decision === 1) {
+                            gameState.hasBaby = true;
+                            gameState.baby = new Baby();
+                            showMessageModal("👶 A child is born! Your life gains new meaning.");
+                        }
+                        continueTurn();
+                    }
+                );
+                return;
+            }
+            
+            continueTurn();
+        }
+
+        // Continue the turn after all modal decisions
+        function continueTurn() {
+            // Increment step
+            gameState.stepOfLife++;
+            
+            // Update baby if exists
+            if (gameState.hasBaby && gameState.baby) {
+                gameState.baby.live();
+                gameState.baby.check();
+                
+                // Check if baby can be sold
+                if ((gameState.baby.age > 9) && (gameState.stepOfLife < 29)) {
+                    showOptionModal(
+                        `💰 Offer to sell your child (Age ${gameState.baby.age}) for $${gameState.baby.age * 100}?\n\n20% chance of police involvement.`,
+                        "Sell Child",
+                        "Keep Child",
+                        (decision) => {
+                            if (decision === 1) {
+                                gameState.hasBaby = false;
+                                gameState.guilty = true;
+                                gameState.money += gameState.baby.age * 100;
+                                showMessageModal(`💰 Sold child for $${gameState.baby.age * 100}...\n\nYou feel guilty but richer. Watch for police!`);
+                            }
+                            finishTurn();
+                        }
+                    );
+                    return;
+                }
+            }
+            
+            finishTurn();
+        }
+
+        // Final turn processing
+        function finishTurn() {
+            // Update UI for new turn
+            updateUI();
+        }
+
+        // Generate random event
+        function randomEvent() {
+            const luck = Math.floor(Math.random() * 15);
+            let event = "";
+            console.log("luck: " + luck + ".");
+            const destiny = Math.floor(Math.random() * 5);
+            
+            switch (luck) {
+                case 0:
+                    event = "📱 Viral social media post! <span class='green'>+$100</span> from sponsors";
+                    gameState.money += 100;
+                    break;
+                    
+                case 1:
+                    if (gameState.married) {
+                        event = "💔 <span class='red'>Divorce!</span> Lost half your money and property";
+                        gameState.money = Math.floor(gameState.money / 2);
+                        gameState.property = Math.floor(gameState.property / 2);
+                        gameState.married = false;
+                        gameState.livingMoney -= 5;
+                    } else {
+                        event = "🌞 Quiet step - no special events";
+                    }
+                    break;
+                    
+                case 2:
+                    console.log("Destiny: " + destiny + ".");
+                    if (gameState.stepOfLife > 5) {
+                            if (destiny < 1) {
+                                event = "🏦 <span class='red'>BANKRUPTCY!</span> Lost all savings!";
+                                gameState.money = 0;
+                            } else if ((destiny > 3) && (gameState.stepOfLife < 27)) {
+                                event = "🏥 <span class='red'>Terminal illness!</span> Only 1 step left to live";
+                                gameState.stepOfLife = 28;
+                            } }else if (!gameState.guilty) {
+                                event = "🍺 <span class='red'>Drunk accident!</span> You killed someone. 20% chance each step to get caught";
+                                gameState.guilty = true;
+                            }else {
+                                const treatmentCost = Math.floor((gameState.money / 3) * 2);
+                                event = `🏥 Serious illness! <span class='red'>-$${treatmentCost}</span> for treatment`;
+                                gameState.money -= treatmentCost;
+                            }
+                            
+                        break;
+                    
+                case 3:
+                    console.log("Destiny: " + destiny + ".");
+                    if (gameState.stepOfLife > 5) {
+                        
+                        if (destiny < 1) {
+                            event = "🏦 <span class='red'>BANKRUPTCY!</span> Lost all savings!";
+                            gameState.money = 0;
+                        } else if ((destiny > 3) && (gameState.stepOfLife < 27)) {
+                            event = "🏥 <span class='red'>Terminal illness!</span> Only 1 step left to live";
+                            gameState.stepOfLife = 28;
+                        } }else if (!gameState.guilty) {
+                            event = "🍺 <span class='red'>Drunk accident!</span> You killed someone. 20% chance each step to get caught";
+                            gameState.guilty = true;
+                        }else {
+                            const treatmentCost = Math.floor((gameState.money / 3) * 2);
+                            event = `🏥 Serious illness! <span class='red'>-$${treatmentCost}</span> for treatment`;
+                            gameState.money -= treatmentCost;
+                        }
+                        
+                    break;
+                    
+                case 4:
+                    event = "🎫 <span class='green'>Lottery win!</span> <span class='green'>+$300</span>";
+                    gameState.money += 300;
+                    break;
+                    
+                case 5:
+                    event = "❄️ <span class='red'>Snowstorm!</span> <span class='red'>spend 30$</span> to repair each property you own";
+                    gameState.money -= (gameState.property * 30);
+                    break;
+                    
+                case 6:
+                    if (gameState.income > 0) {
+                        event = "💼 <span class='red'>Work mistake!</span> Salary withheld this step";
+                        gameState.incomeDeduction = 0;
+                    } else {
+                        event = "🌞 Quiet step - no special events";
+                    }
+                    break;
+                    
+                case 7:
+                    event = "📈 <span class='red'>Inflation!</span> +$5 living costs";
+                    gameState.livingMoney += 5;
+                    break;
+                    
+                case 8:
+                    event = "📉 <span class='green'>Deflation!</span> -$5 living costs";
+                    gameState.livingMoney -= 5;
+                    break;
+                    
+                case 9:
+                    if (gameState.property > 0) {
+                        event = "🏠 <span class='red'>No renters!</span> No rental income this step";
+                        gameState.rentDeduction = 0;
+                    } else {
+                        event = "🌞 Quiet step - no special events";
+                    }
+                    break;
+                    
+                case 10:
+                    if (gameState.income > 0) {
+                        event = "💼 <span class='red'>Work mistake!</span> Salary withheld this step";
+                        gameState.incomeDeduction = 0;
+                    } else {
+                        event = "🌞 Quiet step - no special events";
+                    }
+                    break;
+                    
+                case 11:
+                    event = "📈 <span class='red'>Inflation!</span> +$5 living costs";
+                    gameState.livingMoney += 5;
+                    break;
+                    
+                case 12:
+                    event = "📉 <span class='green'>Deflation!</span> -$5 living costs";
+                    gameState.livingMoney -= 5;
+                    break;
+                    
+                case 13:
+                    event = "🌞 Quiet step - no special events";
+                    break;
+                    
+                case 14:
+                    if (gameState.property > 0) {
+                        event = "🏠 <span class='red'>No renters!</span> No rental income this step";
+                        gameState.rentDeduction = 0;
+                    } else {
+                        event = "🌞 Quiet step - no special events";
+                    }
+                    break;
+            }
+            
+            
+            return event;
+        }
+
+        // Modal dialog functions
+        function showOptionModal(text, option1, option2, callback) {
+            const modal = document.getElementById('optionModal');
+            const modalText = document.getElementById('modal-text');
+            const opt1Btn = document.getElementById('option1');
+            const opt2Btn = document.getElementById('option2');
+            const closeBtn = document.getElementsByClassName('close')[0];
+            
+            modalText.innerHTML = text.replace(/\n/g, '<br>');
+            opt1Btn.textContent = option1;
+            opt2Btn.textContent = option2;
+            
+            modal.style.display = "block";
+            
+            const handleResponse = (response) => {
+                modal.style.display = "none";
+                callback(response);
+                
+                // Remove event listeners to prevent memory leaks
+                opt1Btn.onclick = null;
+                opt2Btn.onclick = null;
+                closeBtn.onclick = null;
+            };
+            
+            opt1Btn.onclick = () => handleResponse(1);
+            opt2Btn.onclick = () => handleResponse(2);
+            closeBtn.onclick = () => handleResponse(0);
+        }
+
+        function showInputModal(text, callback) {
+            const modal = document.getElementById('inputModal');
+            const inputText = document.getElementById('input-text');
+            const inputField = document.getElementById('input-field');
+            const closeBtn = document.getElementsByClassName('close')[1];
+            
+            inputText.textContent = text;
+            inputField.value = "";
+            
+            modal.style.display = "block";
+            inputField.focus();
+            
+            const submitInput = () => {
+                modal.style.display = "none";
+                callback(inputField.value);
+                
+                // Remove event listeners
+                closeBtn.onclick = null;
+            };
+            
+            // Handle Enter key press
+            inputField.onkeypress = (e) => {
+                if (e.key === "Enter") {
+                    submitInput();
+                }
+            };
+            
+            // Set up submit button
+            const submitBtn = modal.querySelector('button');
+            submitBtn.onclick = submitInput;
+            
+            closeBtn.onclick = () => {
+                modal.style.display = "none";
+                callback("");
+            };
+        }
+
+        function showMessageModal(message) {
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.zIndex = '1000';
+            modal.style.left = '0';
+            modal.style.top = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0,0,0,0.8)';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.background = 'linear-gradient(145deg, #2b2d42, #1a1a2e)';
+            modalContent.style.padding = '30px';
+            modalContent.style.borderRadius = '15px';
+            modalContent.style.border = '2px solid var(--secondary)';
+            modalContent.style.boxShadow = '0 0 30px rgba(255, 159, 28, 0.7)';
+            modalContent.style.maxWidth = '80%';
+            modalContent.style.textAlign = 'center';
+            modalContent.style.animation = 'modalAppear 0.4s ease-out';
+            
+            modalContent.innerHTML = `
+                <p style="margin-bottom: 20px; font-size: 1.1rem; line-height: 1.6;">${message.replace(/\n/g, '<br>')}</p>
+                <button onclick="this.parentElement.parentElement.remove()" style="
+                    padding: 10px 20px;
+                    background: var(--secondary);
+                    border: none;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: bold;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                ">OK</button>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+        }
+
+        // Initialize the game when page loads
+        window.onload = initGame;
+    </script>
+    <!-- Modal for input -->
+<div id="inputModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p id="input-text"></p>
+        <input type="number" id="input-field" min="1">
+        <button id="input-submit" style="width: 100%; margin-top: 10px; background: var(--secondary);">Submit</button>
+    </div>
+</div>
+</body>
+</html>

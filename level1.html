@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>第一关：初始房间</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #game-container {
+            display: flex;
+            height: 100vh;
+        }
+        #inventory {
+            width: 200px;
+            background-color: #1a1a1a;
+            padding: 15px;
+            border-right: 1px solid #333;
+            overflow-y: auto;
+        }
+        #inventory h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        #inventory-items {
+            min-height: 50px;
+        }
+        #tree-diagram {
+            flex-grow: 1;
+            position: relative;
+            overflow: auto;
+            padding: 20px;
+            background-color: #0f0f0f;
+        }
+        .node {
+            position: absolute;
+            min-width: 120px;
+            padding: 8px 12px;
+            background-color: #252525;
+            border: 1px solid #444;
+            border-radius: 4px;
+            cursor: pointer;
+            user-select: none;
+            z-index: 1;
+            transition: background-color 0.2s;
+        }
+        .node:hover {
+            background-color: #333;
+        }
+        .node.has-children::after {
+            content: "▼";
+            float: right;
+            font-size: 0.8em;
+            margin-left: 5px;
+        }
+        .connector {
+            position: absolute;
+            height: 2px;
+            background-color: #555;
+            z-index: 0;
+            transform-origin: 0 0;
+        }
+        .story-text {
+            position: fixed;
+            bottom: 0;
+            left: 200px;
+            right: 0;
+            background-color: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-top: 1px solid #333;
+            line-height: 1.5;
+        }
+        .puzzle-input {
+            margin-top: 10px;
+        }
+        .puzzle-input input {
+            background-color: #333;
+            color: white;
+            border: 1px solid #444;
+            padding: 5px;
+            width: 100px;
+        }
+        .puzzle-input button {
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin-left: 5px;
+            cursor: pointer;
+        }
+        .success-message {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="inventory">
+            <h3>背包</h3>
+            <div id="inventory-items"></div>
+        </div>
+        
+        <div id="tree-diagram">
+            <!-- 初始只显示主房间，其他节点通过点击动态添加 -->
+            <div id="room" class="node has-children" style="left: 400px; top: 50px;">主房间</div>
+        </div>
+        
+        <div class="story-text">
+            <p>你在一间昏暗的房间里醒来，头痛欲裂。房间里有一张桌子，墙上挂着一个停止的时钟。你需要找到逃出去的方法...</p>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态
+        const gameState = {
+            inventory: [],
+            nodes: {
+                'room': { x: 400, y: 50, text: '主房间', children: ['clock', 'desk'], shown: true },
+                'clock': { x: 300, y: 150, text: '墙上的时钟', children: ['clock-info', 'inspect-clock'], shown: false },
+                'clock-info': { x: 250, y: 250, text: '时钟信息', action: 'showClockInfo', shown: false },
+                'inspect-clock': { x: 350, y: 250, text: '检查指针', action: 'inspectClock', shown: false },
+                'desk': { x: 500, y: 150, text: '桌子', children: ['drawer'], shown: false },
+                'drawer': { x: 450, y: 250, text: '抽屉', action: 'openDrawer', shown: false },
+                'door': { x: 400, y: 350, text: '前门', action: 'useDoor', shown: false }
+            },
+            clockHandTaken: false,
+            doorUnlocked: false
+        };
+
+        // 初始化游戏
+        function initGame() {
+            setupEventListeners();
+            renderConnectors(); // 初始渲染连接线(只有主房间)
+        }
+
+        // 设置事件监听
+        function setupEventListeners() {
+            document.getElementById('room').addEventListener('click', function() {
+                toggleChildren('room');
+            });
+            
+            // 动态生成的节点需要通过事件委托处理
+            document.getElementById('tree-diagram').addEventListener('click', function(e) {
+                if (e.target.classList.contains('node')) {
+                    const nodeId = e.target.id;
+                    if (gameState.nodes[nodeId].children) {
+                        toggleChildren(nodeId);
+                    } else if (gameState.nodes[nodeId].action) {
+                        handleAction(gameState.nodes[nodeId].action);
+                    }
+                }
+            });
+        }
+
+        // 切换子节点显示
+        function toggleChildren(nodeId) {
+            const node = gameState.nodes[nodeId];
+            
+            // 如果节点有子节点且未显示，则添加它们
+            if (node.children && !node.children.some(child => gameState.nodes[child].shown)) {
+                node.children.forEach(childId => {
+                    gameState.nodes[childId].shown = true;
+                    addNodeToDiagram(childId);
+                });
+            }
+            
+            // 重新渲染连接线
+            renderConnectors();
+            
+            // 如果是时钟节点，显示信息
+            if (nodeId === 'clock') {
+                handleAction('showClockInfo');
+            }
+        }
+
+        // 添加节点到图表
+        function addNodeToDiagram(nodeId) {
+            if (document.getElementById(nodeId)) return;
+            
+            const node = gameState.nodes[nodeId];
+            const nodeElement = document.createElement('div');
+            nodeElement.className = 'node';
+            nodeElement.id = nodeId;
+            nodeElement.textContent = node.text;
+            nodeElement.style.left = node.x + 'px';
+            nodeElement.style.top = node.y + 'px';
+            
+            if (node.children) {
+                nodeElement.classList.add('has-children');
+            }
+            
+            document.getElementById('tree-diagram').appendChild(nodeElement);
+        }
+
+        // 渲染连接线
+        function renderConnectors() {
+            // 清除所有现有连接线
+            document.querySelectorAll('.connector').forEach(el => el.remove());
+            
+            // 为每个显示的节点绘制到其父节点的连接线
+            Object.entries(gameState.nodes).forEach(([nodeId, node]) => {
+                if (node.shown) {
+                    // 找到父节点
+                    const parentEntry = Object.entries(gameState.nodes).find(
+                        ([_, parentNode]) => parentNode.children && parentNode.children.includes(nodeId)
+                    );
+                    
+                    if (parentEntry) {
+                        const [parentId, parentNode] = parentEntry;
+                        if (parentNode.shown) {
+                            drawConnector(parentId, nodeId);
+                        }
+                    }
+                }
+            });
+        }
+
+        // 绘制连接线
+        function drawConnector(parentId, childId) {
+            const parent = document.getElementById(parentId);
+            const child = document.getElementById(childId);
+            
+            if (!parent || !child) return;
+            
+            const parentRect = parent.getBoundingClientRect();
+            const childRect = child.getBoundingClientRect();
+            const diagramRect = document.getElementById('tree-diagram').getBoundingClientRect();
+            
+            // 计算相对位置
+            const startX = parentRect.left - diagramRect.left + parentRect.width / 2;
+            const startY = parentRect.top - diagramRect.top + parentRect.height;
+            const endX = childRect.left - diagramRect.left + childRect.width / 2;
+            const endY = childRect.top - diagramRect.top;
+            
+            // 计算线的长度和角度
+            const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+            const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+            
+            // 创建连接线
+            const connector = document.createElement('div');
+            connector.className = 'connector';
+            connector.style.width = length + 'px';
+            connector.style.left = startX + 'px';
+            connector.style.top = startY + 'px';
+            connector.style.transform = `rotate(${angle}deg)`;
+            
+            document.getElementById('tree-diagram').appendChild(connector);
+        }
+
+        // 处理节点动作
+        function handleAction(action) {
+            const storyElement = document.querySelector('.story-text');
+            
+            switch(action) {
+                case 'showClockInfo':
+                    storyElement.innerHTML = `
+                        <p>墙上的时钟停在4:15，看起来已经坏了很久。</p>
+                        <p>时钟的秒针不见了，只剩下时针和分针。</p>
+                        ${gameState.clockHandTaken ? '<p>你已经取下了时钟的指针。</p>' : ''}
+                    `;
+                    break;
+                    
+                case 'inspectClock':
+                    if (!gameState.clockHandTaken) {
+                        gameState.clockHandTaken = true;
+                        gameState.inventory.push('时钟指针');
+                        updateInventory();
+                        storyElement.innerHTML = `
+                            <p>你从时钟上取下了一根生锈的指针。</p>
+                            <p>现在时钟完全停止不动了。</p>
+                        `;
+                    } else {
+                        storyElement.innerHTML = '<p>时钟已经缺少指针，无法再取了。</p>';
+                    }
+                    break;
+                    
+                case 'openDrawer':
+                    if (gameState.clockHandTaken) {
+                        storyElement.innerHTML = `
+                            <p>你用时钟指针撬开了抽屉。里面有一张纸条：</p>
+                            <p class="clue">"密码是时间的两倍"</p>
+                            <div class="puzzle-input">
+                                <input type="text" id="drawer-code" placeholder="输入三位数密码">
+                                <button onclick="checkDrawerCode()">尝试</button>
+                            </div>
+                        `;
+                    } else {
+                        storyElement.innerHTML = '<p>抽屉锁住了，需要工具才能打开。</p>';
+                    }
+                    break;
+                    
+                case 'useDoor':
+                    if (gameState.doorUnlocked) {
+                        storyElement.innerHTML = `
+                            <p>你用钥匙打开了前门，终于逃出了这个房间！</p>
+                            <p class="success-message">恭喜你完成了第一关！</p>
+                            <button onclick="location.href='wenzimishi.html'" style="padding: 8px 15px; background: #444; color: white; border: none; cursor: pointer;">
+                                返回主菜单
+                            </button>
+                        `;
+                    } else {
+                        storyElement.innerHTML = '<p>门锁住了，需要钥匙才能打开。</p>';
+                    }
+                    break;
+            }
+        }
+
+        // 检查抽屉密码
+        function checkDrawerCode() {
+            const code = document.getElementById('drawer-code').value;
+            const storyElement = document.querySelector('.story-text');
+            
+            if (code === '830') { // 4:15的两倍是8:30
+                storyElement.innerHTML = `
+                    <p>抽屉完全打开了！里面有一把钥匙。</p>
+                    <p>你获得了<strong>门钥匙</strong>！</p>
+                `;
+                gameState.inventory.push('门钥匙');
+                gameState.doorUnlocked = true;
+                updateInventory();
+                
+                // 添加门节点
+                if (!gameState.nodes['door'].shown) {
+                    gameState.nodes['door'].shown = true;
+                    addNodeToDiagram('door');
+                    renderConnectors();
+                }
+            } else {
+                storyElement.innerHTML = '<p>密码错误，抽屉没有反应。</p>';
+            }
+        }
+
+        // 更新背包显示
+        function updateInventory() {
+            const inventoryElement = document.getElementById('inventory-items');
+            inventoryElement.innerHTML = '';
+            
+            gameState.inventory.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.textContent = item;
+                inventoryElement.appendChild(itemElement);
+            });
+        }
+
+        // 初始化游戏
+        window.onload = initGame;
+    </script>
+</body>
+</html>

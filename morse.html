@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MorseFlow - Accessible One-Key To-Do List</title>
+  <style>
+    :root {
+      --primary: #5e60ce;
+      --secondary: #6930c3;
+      --accent: #ff6b6b;
+      --light: #f8f9fa;
+      --dark: #212529;
+      --text-color: #212529;
+      --bg-color: #f1f3f5;
+      --panel-bg: white;
+    }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      margin: 0;
+      padding: 10px;
+      background: var(--bg-color);
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 70% 30%;
+      grid-template-rows: auto auto;
+      gap: 10px;
+      box-sizing: border-box;
+      color: var(--text-color);
+      line-height: 1.4;
+      overflow: hidden;
+      font-size: 20px;
+      transition: all 0.3s ease;
+    }
+    
+    .panel {
+      background: var(--panel-bg);
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    h1 {
+      margin: 0 0 12px 0;
+      font-size: 1.8rem;
+      color: var(--secondary);
+      font-weight: 600;
+    }
+    
+    .instructions {
+      background: rgba(94, 96, 206, 0.08);
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+      line-height: 1.5;
+      border-left: 3px solid var(--primary);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    
+    .instruction-column {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    
+    #input-area {
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+    
+    #morse-sequence {
+      font-family: 'Courier New', monospace;
+      letter-spacing: 4px;
+      font-size: 1.6rem;
+      color: var(--primary);
+      margin: 8px 0;
+      min-height: 1.4em;
+    }
+    
+    #text-output {
+      font-weight: 500;
+      font-size: 1.8rem;
+      min-height: 1.8em;
+      padding: 6px 0;
+      color: var(--text-color);
+    }
+    
+    .progress-container {
+      margin: 15px 0;
+    }
+    
+    .progress-label {
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+      color: #6c757d;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .progress-bar {
+      height: 12px;
+      background: #e9ecef;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    
+    #tap-progress {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.15s ease;
+    }
+    
+    #hold-progress {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      transition: width 0.1s linear;
+    }
+    
+    .key-status {
+      font-size: 1.15rem;
+      padding: 10px 12px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      margin: 10px 0;
+      min-height: 1.3em;
+    }
+    
+    /* Morse Reference Table - Compact */
+    #morse-reference {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 1px;
+      font-size: 0.9rem;
+      padding: 5px;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+    
+    .morse-pair {
+      padding: 2px;
+      text-align: center;
+      white-space: nowrap;
+      line-height: 1.2;
+    }
+    
+    .morse-pair strong {
+      font-weight: 700;
+      color: var(--primary);
+      margin-right: 2px;
+    }
+    
+    #todo-list {
+      overflow-y: auto;
+      flex-grow: 1;
+      font-size: 1.2rem;
+    }
+    
+    .todo-item {
+      padding: 12px 15px;
+      margin-bottom: 10px;
+      background: var(--panel-bg);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .todo-text {
+      flex-grow: 1;
+      word-break: break-word;
+    }
+    
+    .todo-remove {
+      color: var(--accent);
+      cursor: pointer;
+      font-weight: bold;
+      margin-left: 15px;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+      padding: 5px;
+    }
+    
+    /* Accessibility Panel */
+    .accessibility-panel {
+      grid-column: 1 / -1;
+      background: var(--panel-bg);
+      border-radius: 10px;
+      padding: 15px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    
+    button {
+      padding: 10px 15px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      min-width: 100px;
+      transition: all 0.2s ease;
+    }
+    
+    button:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+    
+    button:focus, .todo-remove:focus {
+      outline: 3px solid var(--accent);
+      outline-offset: 2px;
+    }
+    
+    /* Dark Mode */
+    body.dark-mode {
+      --text-color: #f8f9fa;
+      --bg-color: #121212;
+      --panel-bg: #1e1e1e;
+    }
+    
+    body.dark-mode .instructions {
+      background: rgba(94, 96, 206, 0.2);
+    }
+    
+    body.dark-mode .key-status,
+    body.dark-mode .progress-bar {
+      background: #2d2d2d;
+    }
+    
+    /* High Contrast Mode */
+    body.high-contrast {
+      --primary: #000000;
+      --secondary: #000000;
+      --accent: #ffffff;
+      --text-color: #000000;
+      --bg-color: #ffffff;
+      --panel-bg: #ffffff;
+    }
+    
+    body.high-contrast .instructions {
+      background: #ffff00;
+      color: #000000;
+    }
+    
+    body.high-contrast button {
+      background: #000000;
+      color: #ffffff;
+      border: 2px solid #ffffff;
+    }
+    
+    /* Large Text Mode */
+    body.large-text {
+      font-size: 24px;
+    }
+    
+    body.large-text #morse-reference {
+      font-size: 1.1rem;
+    }
+    
+    body.large-text .instructions {
+      font-size: 1.3rem;
+    }
+    
+    body.large-text .key-status,
+    body.large-text .progress-label,
+    body.large-text #todo-list {
+      font-size: 1.4rem;
+    }
+    
+    body.large-text button {
+      font-size: 1.2rem;
+      padding: 12px 18px;
+    }
+    
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+        animation: none !important;
+      }
+      
+      button:hover {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="panel">
+    <h1>MorseFlow</h1>
+    <div class="instructions">
+      <div class="instruction-column">
+        <div><strong>1 tap</strong> = dot (.)</div>
+        <div><strong>2 taps</strong> = dash (-)</div>
+        <div><strong>Click screen</strong> = instructions</div>
+      </div>
+      <div class="instruction-column">
+        <div><strong>3 taps</strong> = convert/delete</div>
+        <div><strong>4 taps</strong> = read all</div>
+        <div><strong>5 taps</strong> = clear all</div>
+      </div>
+      <div class="instruction-column">
+        <div><strong>6 taps</strong> = read current</div>
+        <div><strong>Hold 2s</strong> = submit</div>
+      </div>
+    </div>
+    
+    <div id="input-area">
+      <div class="key-status" id="key-status">Press spacebar to begin</div>
+      
+      <div class="progress-container">
+        <div class="progress-label">
+          <span>Taps: <span id="tap-count">0</span>/6</span>
+          <span id="tap-type">(Dot)</span>
+        </div>
+        <div class="progress-bar">
+          <div id="tap-progress"></div>
+        </div>
+      </div>
+      
+      <div class="progress-container">
+        <div class="progress-label">
+          <span>Hold: <span id="hold-time">0.0</span>s / 2.0s</span>
+        </div>
+        <div class="progress-bar">
+          <div id="hold-progress"></div>
+        </div>
+      </div>
+      
+      <div style="margin: 12px 0;">
+        <div>Morse: <span id="morse-sequence"></span></div>
+        <div>Current: <span id="text-output"></span></div>
+      </div>
+    </div>
+    
+    <!-- Compact Morse Table -->
+    <div id="morse-reference">
+      <div class="morse-pair"><strong>A</strong>.-</div>
+      <div class="morse-pair"><strong>B</strong>-...</div>
+      <div class="morse-pair"><strong>C</strong>-.-.</div>
+      <div class="morse-pair"><strong>D</strong>-..</div>
+      <div class="morse-pair"><strong>E</strong>.</div>
+      <div class="morse-pair"><strong>F</strong>..-.</div>
+      <div class="morse-pair"><strong>G</strong>--.</div>
+      <div class="morse-pair"><strong>H</strong>....</div>
+      <div class="morse-pair"><strong>I</strong>..</div>
+      <div class="morse-pair"><strong>J</strong>.---</div>
+      <div class="morse-pair"><strong>K</strong>-.-</div>
+      <div class="morse-pair"><strong>L</strong>.-..</div>
+      <div class="morse-pair"><strong>M</strong>--</div>
+      <div class="morse-pair"><strong>N</strong>-.</div>
+      <div class="morse-pair"><strong>O</strong>---</div>
+      <div class="morse-pair"><strong>P</strong>.--.</div>
+      <div class="morse-pair"><strong>Q</strong>--.-</div>
+      <div class="morse-pair"><strong>R</strong>.-.</div>
+      <div class="morse-pair"><strong>S</strong>...</div>
+      <div class="morse-pair"><strong>T</strong>-</div>
+      <div class="morse-pair"><strong>U</strong>..-</div>
+      <div class="morse-pair"><strong>V</strong>...-</div>
+      <div class="morse-pair"><strong>W</strong>.--</div>
+      <div class="morse-pair"><strong>X</strong>-..-</div>
+      <div class="morse-pair"><strong>Y</strong>-.--</div>
+      <div class="morse-pair"><strong>Z</strong>--..</div>
+      <div class="morse-pair"><strong>Space</strong>..--</div>
+    </div>
+  </div>
+
+  <div class="panel" style="min-width: 0;">
+    <h1>Your List (<span id="item-count">0</span>)</h1>
+    <div id="todo-list"></div>
+  </div>
+
+  <div class="accessibility-panel">
+    <button id="darkModeToggle">Dark Mode</button>
+    <button id="highContrastToggle">High Contrast</button>
+    <button id="largeTextToggle">Large Text</button>
+    <button id="speakAllButton">Read All</button>
+    <button id="clearAllButton">Clear All</button>
+    <button id="speakCurrentButton">Read Current</button>
+    <button id="repeatInstructions">Instructions</button>
+    <button id="resetButton">Reset</button>
+    <a href="logIn.html">
+      <button id="loginButton">Log In</button>
+    </a>
+  </div>
+
+  <script>
+    const morseToChar = {
+      '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D', '.': 'E',
+      '..-.': 'F', '--.': 'G', '..--': ' ', '....': 'H', '..': 'I', 
+      '.---': 'J', '-.-': 'K', '.-..': 'L', '--': 'M', '-.': 'N', 
+      '---': 'O', '.--.': 'P', '--.-': 'Q', '.-.': 'R', '...': 'S', 
+      '-': 'T', '..-': 'U', '...-': 'V', '.--': 'W', '-..-': 'X', 
+      '-.--': 'Y', '--..': 'Z'
+    };
+
+    let currentMorse = '';
+    let tapCount = 0;
+    let todoItems = [];
+    let tapTimeout;
+    let holdInterval;
+    let isHolding = false;
+    let holdStartTime = 0;
+    let inactivityTimeout;
+
+    // DOM Elements
+    const morseSequenceEl = document.getElementById('morse-sequence');
+    const textOutputEl = document.getElementById('text-output');
+    const itemsEl = document.getElementById('todo-list');
+    const itemCountEl = document.getElementById('item-count');
+    const keyStatusEl = document.getElementById('key-status');
+    const tapProgressEl = document.getElementById('tap-progress');
+    const holdProgressEl = document.getElementById('hold-progress');
+    const tapCountEl = document.getElementById('tap-count');
+    const tapTypeEl = document.getElementById('tap-type');
+    const holdTimeEl = document.getElementById('hold-time');
+    
+    // Accessibility Buttons
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const highContrastToggle = document.getElementById('highContrastToggle');
+    const largeTextToggle = document.getElementById('largeTextToggle');
+    const speakAllButton = document.getElementById('speakAllButton');
+    const clearAllButton = document.getElementById('clearAllButton');
+    const speakCurrentButton = document.getElementById('speakCurrentButton');
+    const repeatInstructions = document.getElementById('repeatInstructions');
+    const resetButton = document.getElementById('resetButton');
+
+    // Speech Synthesis
+    function speak(text, rate = 0.85) {
+      if ('speechSynthesis' in window) {
+        speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = rate;
+        speechSynthesis.speak(utterance);
+      }
+    }
+
+    function repeatInstructionsFunc() {
+      const instructions = `Input Guide: 
+        1 tap equals dot, 
+        2 taps equals dash, 
+        3 taps converts to letter or deletes last character if no input,
+        4 taps reads all items,
+        5 taps clears all items,
+        6 taps reads current text,
+        hold 2 seconds to submit. 
+        Click anywhere to hear these instructions.`;
+      speak(instructions);
+    }
+
+    function updateStatus(message) {
+      keyStatusEl.textContent = message;
+      speak(message);
+    }
+
+    // Morse Code Functions
+    function resetTapState() {
+      tapCount = 0;
+      tapProgressEl.style.width = '0%';
+      tapCountEl.textContent = '0';
+      tapTypeEl.textContent = '(Dot)';
+      clearTimeout(tapTimeout);
+    }
+
+    function startHoldDetection() {
+      if (isHolding) return;
+      
+      isHolding = true;
+      holdStartTime = Date.now();
+      holdProgressEl.style.width = '0%';
+      clearInterval(holdInterval);
+      
+      holdInterval = setInterval(() => {
+        const elapsed = Date.now() - holdStartTime;
+        const progress = Math.min(100, (elapsed / 2000) * 100);
+        holdProgressEl.style.width = `${progress}%`;
+        holdTimeEl.textContent = (elapsed/1000).toFixed(1);
+        
+        if (progress >= 100) {
+          submitToDo();
+          clearInterval(holdInterval);
+          isHolding = false;
+          updateStatus("Item submitted!");
+        }
+      }, 50);
+    }
+
+    function stopHoldDetection() {
+      if (!isHolding) return;
+      
+      clearInterval(holdInterval);
+      holdProgressEl.style.width = '0%';
+      holdTimeEl.textContent = '0.0';
+      isHolding = false;
+    }
+
+    function deleteLastCharacter() {
+      if (textOutputEl.textContent.length > 0) {
+        const deletedChar = textOutputEl.textContent.slice(-1);
+        textOutputEl.textContent = textOutputEl.textContent.slice(0, -1);
+        updateStatus(`Deleted: ${deletedChar === ' ' ? '[Space]' : deletedChar}`);
+      } else {
+        updateStatus("Nothing to delete");
+      }
+    }
+
+    function processTaps() {
+      if (tapCount === 1) {
+        currentMorse += '.';
+        morseSequenceEl.textContent = currentMorse;
+        updateStatus("dot");
+      } 
+      else if (tapCount === 2) {
+        currentMorse += '-';
+        morseSequenceEl.textContent = currentMorse;
+        updateStatus("dash");
+      }
+      else if (tapCount === 3) {
+        if (currentMorse === '') {
+          deleteLastCharacter();
+        } else {
+          convertMorse();
+        }
+      }
+      else if (tapCount === 4) {
+        speakAllItems();
+      }
+      else if (tapCount === 5) {
+        clearAllItems();
+      }
+      else if (tapCount === 6) {
+        speakCurrentText();
+      }
+      
+      resetTapState();
+      resetInactivityTimer();
+    }
+
+    function convertMorse() {
+      if (currentMorse) {
+        const char = morseToChar[currentMorse] || '?';
+        textOutputEl.textContent += char;
+        currentMorse = '';
+        morseSequenceEl.textContent = '';
+        updateStatus(`Converted to: ${char === ' ' ? '[Space]' : char}`);
+      }
+      resetTapState();
+      resetInactivityTimer();
+    }
+
+    function submitToDo() {
+      if (textOutputEl.textContent.trim()) {
+        addTodoItem(textOutputEl.textContent);
+        textOutputEl.textContent = '';
+      }
+      currentMorse = '';
+      morseSequenceEl.textContent = '';
+      resetInactivityTimer();
+    }
+
+    function resetInactivityTimer() {
+      clearTimeout(inactivityTimeout);
+      inactivityTimeout = setTimeout(() => {
+        if (currentMorse) {
+          currentMorse = '';
+          morseSequenceEl.textContent = '';
+          updateStatus("Morse input cleared due to inactivity");
+        }
+      }, 5000);
+    }
+
+    // Todo List Functions
+    function addTodoItem(text) {
+      if (!text.trim()) return;
+      todoItems.push(text);
+      renderTodoList();
+      speak(`Added: ${text}`);
+    }
+
+    function renderTodoList() {
+      itemsEl.innerHTML = '';
+      todoItems.forEach((item, index) => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'todo-item';
+        itemEl.innerHTML = `
+          <span class="todo-text">${index + 1}. ${item}</span>
+          <span class="todo-remove" tabindex="0" aria-label="Remove ${item}" onclick="removeItem(${index})" onkeydown="if(event.key === 'Enter') removeItem(${index})">✕</span>
+        `;
+        itemsEl.appendChild(itemEl);
+      });
+      itemCountEl.textContent = todoItems.length;
+    }
+
+    function removeItem(index) {
+      const item = todoItems[index];
+      todoItems.splice(index, 1);
+      renderTodoList();
+      updateStatus(`Removed: ${item}`);
+    }
+
+    function clearAllItems() {
+      if (todoItems.length === 0) {
+        updateStatus("List is already empty");
+        return;
+      }
+      
+      todoItems = [];
+      renderTodoList();
+      updateStatus("All items cleared");
+    }
+
+    function speakAllItems() {
+      if (todoItems.length === 0) {
+        updateStatus("No items in list");
+        return;
+      }
+      
+      const itemsText = todoItems.map((item, index) => 
+        `Item ${index + 1}: ${item}`).join('. ');
+      speak("Your list contains: " + itemsText);
+    }
+
+    function speakCurrentText() {
+      const text = textOutputEl.textContent || "No current text";
+      speak("Current text: " + text.toLowerCase());
+    }
+
+    function resetAll() {
+      currentMorse = '';
+      morseSequenceEl.textContent = '';
+      textOutputEl.textContent = '';
+      resetTapState();
+      stopHoldDetection();
+      updateStatus("System reset. Ready for input.");
+    }
+
+    // Accessibility Functions
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      darkModeToggle.textContent = isDark ? "Light Mode" : "Dark Mode";
+      updateStatus(`Dark mode ${isDark ? "enabled" : "disabled"}`);
+    }
+
+    function toggleHighContrast() {
+      document.body.classList.toggle('high-contrast');
+      const isHC = document.body.classList.contains('high-contrast');
+      highContrastToggle.textContent = isHC ? "Normal Contrast" : "High Contrast";
+      updateStatus(`High contrast mode ${isHC ? "enabled" : "disabled"}`);
+    }
+
+    function toggleLargeText() {
+      document.body.classList.toggle('large-text');
+      const isLarge = document.body.classList.contains('large-text');
+      largeTextToggle.textContent = isLarge ? "Normal Text" : "Large Text";
+      updateStatus(`Large text mode ${isLarge ? "enabled" : "disabled"}`);
+    }
+
+    // Event Listeners
+    darkModeToggle.addEventListener('click', toggleDarkMode);
+    highContrastToggle.addEventListener('click', toggleHighContrast);
+    largeTextToggle.addEventListener('click', toggleLargeText);
+    speakAllButton.addEventListener('click', speakAllItems);
+    clearAllButton.addEventListener('click', clearAllItems);
+    speakCurrentButton.addEventListener('click', speakCurrentText);
+    repeatInstructions.addEventListener('click', repeatInstructionsFunc);
+    resetButton.addEventListener('click', resetAll);
+
+    // Click anywhere to hear instructions
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('button') && !e.target.classList.contains('todo-remove')) {
+        repeatInstructionsFunc();
+      }
+    });
+
+    // Keyboard Event Listeners
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (!isHolding) {
+          startHoldDetection();
+        }
+        resetInactivityTimer();
+      }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        stopHoldDetection();
+        
+        tapCount++;
+        const progress = Math.min(100, (tapCount / 6) * 100);
+        tapProgressEl.style.width = `${progress}%`;
+        tapCountEl.textContent = tapCount;
+        tapTypeEl.textContent = 
+          tapCount === 1 ? '(Dot)' : 
+          tapCount === 2 ? '(Dash)' : 
+          tapCount === 3 ? '(Convert/Delete)' :
+          tapCount === 4 ? '(Read All)' : 
+          tapCount === 5 ? '(Clear All)' : '(Read Current)';
+        
+        clearTimeout(tapTimeout);
+        tapTimeout = setTimeout(processTaps, 500);
+        resetInactivityTimer();
+      }
+    });
+
+    // Initial instructions
+    const initialInstructions = `Welcome to MorseFlow. 
+      Press spacebar to input Morse code. 
+      One tap for dot, two taps for dash, 
+      three taps converts to letter or deletes last character if no input,
+      four taps to read all items, five taps to clear all,
+      six taps to read current text.
+      Hold two seconds to submit. 
+      Click anywhere to hear instructions.`;
+    
+    // Initialize
+    setTimeout(() => {
+      speak(initialInstructions);
+      updateStatus("Ready - Press spacebar to begin");
+    }, 500);
+    resetInactivityTimer();
+
+    // Make sure all interactive elements are keyboard accessible
+    document.querySelectorAll('button, [tabindex]').forEach(el => {
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          el.click();
+        }
+      });
+    });
+
+    // Expose removeItem to global scope for HTML onclick
+    window.removeItem = removeItem;
+  </script>
+</body>
+</html>

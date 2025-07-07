@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>暗夜逃生 - 恐怖生存游戏</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #ccc;
+            font-family: 'Microsoft YaHei', sans-serif;
+            overflow: hidden;
+            user-select: none;
+            height: 100vh;
+            perspective: 1000px;
+        }
+        
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #111;
+            overflow: hidden;
+        }
+        
+        #scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            transition: transform 0.3s, filter 0.5s;
+            transform-style: preserve-3d;
+        }
+        
+        #ui {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+            text-align: center;
+            z-index: 10;
+        }
+        
+        #health-bar {
+            width: 200px;
+            height: 20px;
+            background-color: #300;
+            margin: 0 auto 10px;
+            border: 1px solid #500;
+            position: relative;
+        }
+        
+        #health-fill {
+            height: 100%;
+            width: 100%;
+            background-color: #a00;
+            transition: width 0.3s;
+        }
+        
+        #message {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-left: 3px solid #a00;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        #inventory {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .inventory-item {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(100, 0, 0, 0.3);
+            margin: 5px;
+            display: inline-block;
+            border: 1px solid #500;
+            text-align: center;
+            line-height: 50px;
+            cursor: pointer;
+        }
+        
+        #actions {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .action-btn {
+            background-color: rgba(50, 0, 0, 0.7);
+            color: #ccc;
+            border: 1px solid #a00;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            background-color: rgba(100, 0, 0, 0.7);
+            color: #fff;
+        }
+        
+        #menu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #menu h1 {
+            color: #a00;
+            font-size: 3em;
+            text-shadow: 0 0 10px #f00;
+            margin-bottom: 30px;
+        }
+        
+        .menu-btn {
+            background-color: #300;
+            color: #ccc;
+            border: 1px solid #a00;
+            padding: 15px 30px;
+            margin: 10px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s;
+            width: 200px;
+            text-align: center;
+        }
+        
+        .menu-btn:hover {
+            background-color: #a00;
+            color: #fff;
+            text-shadow: 0 0 5px #fff;
+        }
+        
+        #sound-toggle {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            color: #ccc;
+            cursor: pointer;
+        }
+        
+        #jumpscare {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: 10000;
+            display: none;
+        }
+        
+        #jumpscare-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .flicker {
+            animation: flicker 0.3s infinite;
+        }
+        
+        @keyframes flicker {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        
+        #sanity-meter {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 100px;
+            height: 15px;
+            background-color: #003;
+            border: 1px solid #005;
+        }
+        
+        #sanity-fill {
+            height: 100%;
+            width: 100%;
+            background-color: #00a;
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="scene"></div>
+        
+        <div id="ui">
+            <div id="health-bar">
+                <div id="health-fill"></div>
+            </div>
+            <div id="message"></div>
+            <div id="actions"></div>
+        </div>
+        
+        <div id="inventory">
+            <h3>物品栏</h3>
+            <div id="inventory-items"></div>
+        </div>
+        
+        <div id="sanity-meter">
+            <div id="sanity-fill"></div>
+        </div>
+        
+        <div id="sound-toggle">🔊</div>
+        
+        <div id="jumpscare">
+            <img id="jumpscare-img" src="" alt="">
+        </div>
+        
+        <div id="menu">
+            <h1>暗夜逃生</h1>
+            <div class="menu-btn" id="new-game">新的游戏</div>
+            <div class="menu-btn" id="continue-game">继续游戏</div>
+            <div class="menu-btn" id="settings">设置</div>
+        </div>
+    </div>
+    
+    <audio id="bgm" loop>
+        <source src="https://assets.mixkit.co/music/preview/mixkit-dark-ambient-1471.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="footsteps">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-footsteps-on-wood-floor-1357.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="door-creak">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-creaky-door-2296.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="whisper">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-scary-whispers-566.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="scream">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-woman-screams-in-horror-1524.mp3" type="audio/mpeg">
+    </audio>
+    
+    <audio id="heartbeat">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-fast-heartbeat-1174.mp3" type="audio/mpeg">
+    </audio>
+    
+    <script>
+        // 游戏状态
+        const gameState = {
+            currentScene: 'entrance',
+            health: 100,
+            sanity: 100,
+            inventory: [],
+            hasFlashlight: false,
+            hasKey: false,
+            doorUnlocked: false,
+            monsterActive: false,
+            gameStarted: false,
+            soundOn: true
+        };
+        
+        // 场景描述
+        const scenes = {
+            entrance: {
+                image: 'https://images.unsplash.com/photo-1600585152220-90363fe7e115?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+                description: '你站在一座废弃的老宅前。月光透过乌云时隐时现，给破败的建筑蒙上一层诡异的银光。前门半开着，发出令人不安的吱呀声。',
+                actions: [
+                    { text: '进入前门', nextScene: 'hallway', condition: () => true, sound: 'door-creak' },
+                    { text: '绕到后院', nextScene: 'backyard', condition: () => true },
+                    { text: '检查邮箱', nextScene: 'mailbox', condition: () => true }
+                ]
+            },
+            hallway: {
+                image: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+                description: '阴暗的走廊延伸向黑暗中。墙纸剥落，地板在你脚下吱吱作响。左边是一扇关着的门，右边楼梯通向二楼。走廊尽头有一面破碎的镜子。',
+                actions: [
+                    { text: '上楼', nextScene: 'stairs', condition: () => true, sound: 'footsteps' },
+                    { text: '检查左边的门', nextScene: 'living-room', condition: () => true, sound: 'door-creak' },
+                    { text: '查看镜子', nextScene: 'mirror', condition: () => true },
+                    { text: '返回入口', nextScene: 'entrance', condition: () => true }
+                ],
+                onEnter: () => {
+                    if(Math.random() > 0.7 && !gameState.monsterActive) {
+                        showMessage("你听到身后有沙沙声...", 3000);
+                        playSound('whisper');
+                        setTimeout(() => {
+                            if(gameState.currentScene === 'hallway') {
+                                triggerJumpscare();
+                            }
+                        }, 2000);
+                    }
+                }
+            },
+            living_room: {
+                image: 'https://images.unsplash.com/photo-1600607688969-a5bfcd646154?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+                description: '客厅里家具都盖着白布，像一排排幽灵。壁炉里还有未燃尽的木炭。电视机屏幕破碎，反射着诡异的光。',
+                actions: [
+                    { text: '检查壁炉', nextScene: 'fireplace', condition: () => true },
+                    { text: '掀开沙发上的白布', nextScene: 'sofa', condition: () => true },
+                    { text: '返回走廊', nextScene: 'hallway', condition: () => true, sound: 'door-creak' }
+                ],
+                onEnter: () => {
+                    if(!gameState.hasFlashlight && Math.random() > 0.5) {
+                        gameState.hasFlashlight = true;
+                        gameState.inventory.push('flashlight');
+                        showMessage("你在沙发下找到了一支手电筒！", 3000);
+                        updateInventory();
+                    }
+                }
+            },
+            bedroom: {
+                image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+                description: '卧室里有一张四柱床，帷幔破旧。梳妆台上摆满了发霉的化妆品。衣柜门微微晃动，好像刚刚有人关上了它。',
+                actions: [
+                    { text: '检查衣柜', nextScene: 'wardrobe', condition: () => true },
+                    { text: '查看床下', nextScene: 'under-bed', condition: () => true },
+                    { text: '返回走廊', nextScene: 'hallway', condition: () => true }
+                ],
+                onEnter: () => {
+                    if(Math.random() > 0.8) {
+                        document.getElementById('scene').classList.add('flicker');
+                        showMessage("灯光闪烁...有什么东西在靠近...", 2000);
+                        setTimeout(() => {
+                            document.getElementById('scene').classList.remove('flicker');
+                        }, 2000);
+                    }
+                }
+            },
+            basement: {
+                image: 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+                description: '潮湿的地下室散发着霉味。墙上挂着生锈的工具。角落里有一个锁着的箱子。楼梯上方传来奇怪的刮擦声。',
+                actions: [
+                    { text: '检查箱子', nextScene: 'chest', condition: () => true },
+                    { text: '上楼', nextScene: 'hallway', condition: () => true, sound: 'footsteps' },
+                    { text: '查看工具', nextScene: 'tools', condition: () => true }
+                ],
+                onEnter: () => {
+                    decreaseSanity(10);
+                    if(!gameState.hasKey && Math.random() > 0.6) {
+                        gameState.hasKey = true;
+                        gameState.inventory.push('key');
+                        showMessage("你在工具堆里发现了一把钥匙！", 3000);
+                        updateInventory();
+                    }
+                }
+            }
+        };
+        
+        // 初始化游戏
+        function initGame() {
+            document.getElementById('new-game').addEventListener('click', startNewGame);
+            document.getElementById('continue-game').addEventListener('click', continueGame);
+            document.getElementById('sound-toggle').addEventListener('click', toggleSound);
+            
+            // 加载保存的游戏
+            const savedGame = localStorage.getItem('horrorEscapeGame');
+            if(savedGame) {
+                document.getElementById('continue-game').style.display = 'block';
+            } else {
+                document.getElementById('continue-game').style.display = 'none';
+            }
+            
+            // 开始背景音乐
+            playSound('bgm', 0.3);
+        }
+        
+        // 开始新游戏
+        function startNewGame() {
+            // 重置游戏状态
+            gameState.currentScene = 'entrance';
+            gameState.health = 100;
+            gameState.sanity = 100;
+            gameState.inventory = [];
+            gameState.hasFlashlight = false;
+            gameState.hasKey = false;
+            gameState.doorUnlocked = false;
+            gameState.monsterActive = false;
+            gameState.gameStarted = true;
+            
+            updateHealth();
+            updateSanity();
+            updateInventory();
+            
+            document.getElementById('menu').style.display = 'none';
+            loadScene(gameState.currentScene);
+        }
+        
+        // 继续游戏
+        function continueGame() {
+            const savedGame = JSON.parse(localStorage.getItem('horrorEscapeGame'));
+            Object.assign(gameState, savedGame);
+            gameState.gameStarted = true;
+            
+            updateHealth();
+            updateSanity();
+            updateInventory();
+            
+            document.getElementById('menu').style.display = 'none';
+            loadScene(gameState.currentScene);
+        }
+        
+        // 保存游戏
+        function saveGame() {
+            localStorage.setItem('horrorEscapeGame', JSON.stringify(gameState));
+        }
+        
+        // 加载场景
+        function loadScene(sceneId) {
+            const scene = scenes[sceneId];
+            if(!scene) return;
+            
+            gameState.currentScene = sceneId;
+            document.getElementById('scene').style.backgroundImage = `url('${scene.image}')`;
+            
+            // 显示场景描述
+            showMessage(scene.description, 5000);
+            
+            // 清除旧动作
+            const actionsContainer = document.getElementById('actions');
+            actionsContainer.innerHTML = '';
+            
+            // 添加新动作
+            scene.actions.forEach(action => {
+                if(!action.condition || action.condition()) {
+                    const btn = document.createElement('div');
+                    btn.className = 'action-btn';
+                    btn.textContent = action.text;
+                    btn.addEventListener('click', () => {
+                        if(action.sound) {
+                            playSound(action.sound);
+                        }
+                        loadScene(action.nextScene);
+                    });
+                    actionsContainer.appendChild(btn);
+                }
+            });
+            
+            // 添加物品栏按钮
+            const inventoryBtn = document.createElement('div');
+            inventoryBtn.className = 'action-btn';
+            inventoryBtn.textContent = '物品栏';
+            inventoryBtn.addEventListener('click', toggleInventory);
+            actionsContainer.appendChild(inventoryBtn);
+            
+            // 调用场景进入事件
+            if(scene.onEnter) {
+                scene.onEnter();
+            }
+            
+            // 随机恐怖事件
+            if(Math.random() > 0.8 && sceneId !== 'entrance') {
+                randomHorrorEvent();
+            }
+            
+            // 自动保存
+            saveGame();
+        }
+        
+        // 显示消息
+        function showMessage(text, duration = 3000) {
+            const msgElement = document.getElementById('message');
+            msgElement.textContent = text;
+            msgElement.style.display = 'block';
+            
+            if(duration > 0) {
+                setTimeout(() => {
+                    msgElement.style.display = 'none';
+                }, duration);
+            }
+        }
+        
+        // 更新生命值显示
+        function updateHealth() {
+            document.getElementById('health-fill').style.width = `${gameState.health}%`;
+        }
+        
+        // 更新理智值显示
+        function updateSanity() {
+            document.getElementById('sanity-fill').style.width = `${gameState.sanity}%`;
+            
+            // 理智值低的效果
+            if(gameState.sanity < 30) {
+                document.body.style.filter = 'hue-rotate(90deg)';
+                if(Math.random() > 0.9) {
+                    showMessage("你开始产生幻觉...有什么东西在看着你...", 2000);
+                }
+            } else {
+                document.body.style.filter = 'none';
+            }
+        }
+        
+        // 减少理智值
+        function decreaseSanity(amount) {
+            gameState.sanity = Math.max(0, gameState.sanity - amount);
+            updateSanity();
+            
+            if(gameState.sanity <= 0) {
+                gameOver("你的理智崩溃了，陷入了疯狂...");
+            }
+        }
+        
+        // 更新物品栏
+        function updateInventory() {
+            const inventoryItems = document.getElementById('inventory-items');
+            inventoryItems.innerHTML = '';
+            
+            gameState.inventory.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'inventory-item';
+                itemElement.textContent = item === 'flashlight' ? '🔦' : item === 'key' ? '🔑' : '?';
+                itemElement.addEventListener('click', () => useItem(item));
+                inventoryItems.appendChild(itemElement);
+            });
+        }
+        
+        // 使用物品
+        function useItem(item) {
+            if(item === 'flashlight') {
+                showMessage("你打开了手电筒，周围亮了起来。", 2000);
+                document.getElementById('scene').style.filter = 'brightness(1.5)';
+                setTimeout(() => {
+                    document.getElementById('scene').style.filter = 'brightness(1)';
+                }, 2000);
+            } else if(item === 'key' && gameState.currentScene === 'chest') {
+                showMessage("你用钥匙打开了箱子！里面有一张纸条：'快逃...它来了...'", 4000);
+                gameState.doorUnlocked = true;
+            }
+        }
+        
+        // 切换物品栏显示
+        function toggleInventory() {
+            const inventory = document.getElementById('inventory');
+            inventory.style.display = inventory.style.display === 'block' ? 'none' : 'block';
+        }
+        
+        // 随机恐怖事件
+        function randomHorrorEvent() {
+            const events = [
+                () => {
+                    showMessage("你听到远处传来低语声...", 2000);
+                    playSound('whisper');
+                    decreaseSanity(5);
+                },
+                () => {
+                    showMessage("墙上的阴影似乎在移动...", 2000);
+                    decreaseSanity(8);
+                },
+                () => {
+                    if(!gameState.monsterActive) {
+                        showMessage("有什么东西在跟着你...", 2000);
+                        playSound('footsteps');
+                        setTimeout(() => {
+                            if(Math.random() > 0.5) {
+                                triggerJumpscare();
+                            }
+                        }, 3000);
+                    }
+                }
+            ];
+            
+            const randomEvent = events[Math.floor(Math.random() * events.length)];
+            randomEvent();
+        }
+        
+        // 触发跳吓
+        function triggerJumpscare() {
+            gameState.monsterActive = true;
+            playSound('scream');
+            
+            const jumpscare = document.getElementById('jumpscare');
+            const jumpscareImg = document.getElementById('jumpscare-img');
+            
+            // 随机选择跳吓图片
+            const jumpscares = [
+                'https://i.imgur.com/XdQaZQj.jpg',
+                'https://i.imgur.com/Yq9WQvJ.jpg',
+                'https://i.imgur.com/Zq9WQvJ.jpg'
+            ];
+            
+            jumpscareImg.src = jumpscares[Math.floor(Math.random() * jumpscares.length)];
+            jumpscare.style.display = 'block';
+            
+            setTimeout(() => {
+                jumpscare.style.display = 'none';
+                gameState.health -= 20;
+                gameState.sanity -= 30;
+                updateHealth();
+                updateSanity();
+                
+                if(gameState.health <= 0) {
+                    gameOver("你被恐怖的生物杀死了...");
+                } else {
+                    showMessage("你勉强逃脱了，但受了伤...", 3000);
+                    gameState.monsterActive = false;
+                }
+            }, 1000);
+        }
+        
+        // 游戏结束
+        function gameOver(message) {
+            showMessage(message, 0);
+            playSound('heartbeat');
+            
+            const actionsContainer = document.getElementById('actions');
+            actionsContainer.innerHTML = '';
+            
+            const restartBtn = document.createElement('div');
+            restartBtn.className = 'action-btn';
+            restartBtn.textContent = '重新开始';
+            restartBtn.addEventListener('click', () => {
+                document.location.reload();
+            });
+            actionsContainer.appendChild(restartBtn);
+        }
+        
+        // 播放音效
+        function playSound(soundId, volume = 1.0) {
+            if(!gameState.soundOn) return;
+            
+            const sound = document.getElementById(soundId);
+            sound.volume = volume;
+            sound.currentTime = 0;
+            sound.play().catch(e => console.log("无法播放声音:", e));
+        }
+        
+        // 切换声音
+        function toggleSound() {
+            gameState.soundOn = !gameState.soundOn;
+            document.getElementById('sound-toggle').textContent = gameState.soundOn ? '🔊' : '🔇';
+            
+            if(gameState.soundOn) {
+                playSound('bgm', 0.3);
+            } else {
+                document.getElementById('bgm').pause();
+            }
+        }
+        
+        // 启动游戏
+        window.onload = initGame;
+    </script>
+</body>
+</html>

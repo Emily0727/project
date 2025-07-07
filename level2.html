@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>第二关：二进制齿轮谜题</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #0a0a0a;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        #game-container {
+            display: flex;
+            height: 100vh;
+        }
+        #inventory {
+            width: 200px;
+            background-color: #111;
+            padding: 15px;
+            border-right: 1px solid #333;
+            overflow-y: auto;
+        }
+        #tree-diagram {
+            flex-grow: 1;
+            position: relative;
+            overflow: auto;
+            padding: 20px;
+        }
+        .node {
+            position: absolute;
+            min-width: 120px;
+            padding: 8px 12px;
+            background-color: #222;
+            border: 1px solid #444;
+            border-radius: 3px;
+            cursor: grab;
+            user-select: none;
+            z-index: 1;
+        }
+        .node:active {
+            cursor: grabbing;
+        }
+        .has-children::after {
+            content: "›";
+            float: right;
+            margin-left: 5px;
+        }
+        .connector {
+            position: absolute;
+            height: 2px;
+            background-color: #555;
+            z-index: 0;
+            transform-origin: 0 0;
+        }
+        .story-text {
+            position: fixed;
+            bottom: 0;
+            left: 200px;
+            right: 0;
+            background-color: rgba(0,0,0,0.9);
+            padding: 15px;
+            border-top: 1px solid #333;
+            max-height: 30vh;
+            overflow-y: auto;
+        }
+        .clue-section {
+            background-color: #1a1a1a;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 3px solid #444;
+        }
+        .binary-pattern {
+            font-family: monospace;
+            font-size: 1.2em;
+            letter-spacing: 3px;
+            color: #4CAF50;
+            margin: 5px 0;
+        }
+        .puzzle-input {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #1a1a1a;
+        }
+        .puzzle-input button {
+            background-color: #333;
+            color: white;
+            border: 1px solid #444;
+            padding: 5px 10px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .return-btn {
+            background-color: #444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="inventory">
+            <h3>背包</h3>
+            <div id="inventory-items"></div>
+        </div>
+        
+        <div id="tree-diagram">
+            <div id="main-room" class="node has-children" style="left: 400px; top: 50px;">主房间</div>
+        </div>
+        
+        <div class="story-text">
+            <p>你进入一个充满齿轮的机械室，墙上三个巨大的齿轮发出规律的咔嗒声...</p>
+            <div class="clue-section" id="dynamic-clues">
+                <!-- 线索将动态显示在这里 -->
+            </div>
+            <div id="puzzle-interface"></div>
+        </div>
+    </div>
+
+    <script>
+        // 游戏状态
+        const gameState = {
+            inventory: [],
+            nodes: {
+                'main-room': { x: 400, y: 50, text: '主房间', children: ['gear-wall', 'control-panel'], shown: true },
+                'gear-wall': { x: 300, y: 150, text: '齿轮墙', children: ['gear-1', 'gear-2', 'gear-3'], shown: false },
+                'gear-1': { x: 250, y: 250, text: '齿轮（三角形）', action: 'takeGear', 
+                           pattern: '▲▲▼▼▲', binary: '1 1 0 0 1', decimal: 25, shown: false },
+                'gear-2': { x: 350, y: 250, text: '齿轮（圆形）', action: 'takeGear', 
+                           pattern: '◯●◯●◯', binary: '0 1 0 1 0', decimal: 10, shown: false },
+                'gear-3': { x: 450, y: 250, text: '齿轮（方形）', action: 'takeGear', 
+                           pattern: '■□□■□', binary: '1 0 0 1 0', decimal: 18, shown: false },
+                'control-panel': { x: 500, y: 150, text: '控制台', children: ['button-panel'], shown: false },
+                'button-panel': { x: 450, y: 250, text: '按钮面板', action: 'showButtons', shown: false },
+                'elevator': { x: 400, y: 350, text: '电梯', action: 'useElevator', shown: false }
+            },
+            collectedGears: [],
+            isDragging: false,
+            dragOffset: { x: 0, y: 0 }
+        };
+
+        // 初始化游戏
+        function initGame() {
+            setupEventListeners();
+            renderConnectors();
+        }
+
+        // 事件监听
+        function setupEventListeners() {
+            document.getElementById('main-room').addEventListener('mousedown', startDrag);
+            document.getElementById('tree-diagram').addEventListener('mousedown', handleNodeClick);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', endDrag);
+        }
+
+        // 拖动功能
+        function startDrag(e) {
+            if (e.target.classList.contains('node')) {
+                gameState.isDragging = true;
+                gameState.draggedNode = e.target;
+                const rect = e.target.getBoundingClientRect();
+                gameState.dragOffset = {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+                e.target.style.zIndex = 100;
+                e.preventDefault();
+            }
+        }
+
+        function drag(e) {
+            if (!gameState.isDragging) return;
+            
+            const node = gameState.draggedNode;
+            const diagram = document.getElementById('tree-diagram');
+            const diagramRect = diagram.getBoundingClientRect();
+            
+            let x = e.clientX - diagramRect.left - gameState.dragOffset.x;
+            let y = e.clientY - diagramRect.top - gameState.dragOffset.y;
+            
+            // 边界检查
+            x = Math.max(0, Math.min(x, diagramRect.width - node.offsetWidth));
+            y = Math.max(0, Math.min(y, diagramRect.height - node.offsetHeight));
+            
+            node.style.left = x + 'px';
+            node.style.top = y + 'px';
+            
+            // 更新节点位置
+            const nodeId = node.id;
+            gameState.nodes[nodeId].x = x;
+            gameState.nodes[nodeId].y = y;
+            
+            renderConnectors();
+        }
+
+        function endDrag() {
+            if (gameState.isDragging) {
+                gameState.draggedNode.style.zIndex = 1;
+                gameState.isDragging = false;
+                gameState.draggedNode = null;
+            }
+        }
+
+        // 节点点击处理
+        function handleNodeClick(e) {
+            if (!e.target.classList.contains('node')) return;
+            
+            const nodeId = e.target.id;
+            const node = gameState.nodes[nodeId];
+            
+            if (node.children) {
+                toggleChildren(nodeId);
+            } else if (node.action) {
+                handleAction(nodeId);
+            }
+        }
+
+        // 显示子节点
+        function toggleChildren(nodeId) {
+            const node = gameState.nodes[nodeId];
+            if (!node.children) return;
+
+            node.children.forEach(childId => {
+                if (!gameState.nodes[childId].shown) {
+                    gameState.nodes[childId].shown = true;
+                    addNodeToDiagram(childId);
+                }
+            });
+            renderConnectors();
+            
+            // 特殊交互
+            if (nodeId === 'gear-wall') showGearWallHint();
+        }
+
+        // 添加节点
+        function addNodeToDiagram(nodeId) {
+            const node = gameState.nodes[nodeId];
+            const element = document.createElement('div');
+            element.className = 'node' + (node.children ? ' has-children' : '');
+            element.id = nodeId;
+            element.textContent = node.text;
+            element.style.left = node.x + 'px';
+            element.style.top = node.y + 'px';
+            element.addEventListener('mousedown', startDrag);
+            document.getElementById('tree-diagram').appendChild(element);
+        }
+
+        // 渲染连接线
+        function renderConnectors() {
+            document.querySelectorAll('.connector').forEach(el => el.remove());
+            
+            Object.entries(gameState.nodes).forEach(([nodeId, node]) => {
+                if (node.shown && node.children) {
+                    node.children.forEach(childId => {
+                        if (gameState.nodes[childId].shown) {
+                            drawConnector(nodeId, childId);
+                        }
+                    });
+                }
+            });
+        }
+
+        // 绘制连接线
+        function drawConnector(parentId, childId) {
+            const parent = document.getElementById(parentId);
+            const child = document.getElementById(childId);
+            if (!parent || !child) return;
+
+            const startX = parent.offsetLeft + parent.offsetWidth / 2;
+            const startY = parent.offsetTop + parent.offsetHeight;
+            const endX = child.offsetLeft + child.offsetWidth / 2;
+            const endY = child.offsetTop;
+
+            const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+            const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
+
+            const connector = document.createElement('div');
+            connector.className = 'connector';
+            connector.style.width = `${length}px`;
+            connector.style.left = `${startX}px`;
+            connector.style.top = `${startY}px`;
+            connector.style.transform = `rotate(${angle}deg)`;
+            document.getElementById('tree-diagram').appendChild(connector);
+        }
+
+        // 处理节点动作
+        function handleAction(nodeId) {
+            const node = gameState.nodes[nodeId];
+            const clues = document.getElementById('dynamic-clues');
+            
+            switch(node.action) {
+                case 'takeGear':
+                    if (!gameState.collectedGears.includes(nodeId)) {
+                        gameState.collectedGears.push(nodeId);
+                        gameState.inventory.push(node.text);
+                        updateInventory();
+                        
+                        // 添加齿轮线索
+                        const clue = document.createElement('div');
+                        clue.innerHTML = `
+                            <p><strong>${node.text}</strong></p>
+                            <div class="binary-pattern">${node.pattern}</div>
+                            <p>内部标记：${node.binary}</p>
+                            <hr>
+                        `;
+                        clues.appendChild(clue);
+                        
+                        if (gameState.collectedGears.length === 3) {
+                            const hint = document.createElement('div');
+                            hint.innerHTML = `
+                                <p>控制台上刻着：<em>"二进制转十进制的和"</em></p>
+                            `;
+                            clues.appendChild(hint);
+                        }
+                    }
+                    break;
+                    
+                case 'showButtons':
+                    if (gameState.collectedGears.length < 3) {
+                        showMessage("需要先收集所有齿轮！");
+                        return;
+                    }
+                    showButtonPanel();
+                    break;
+                    
+                case 'useElevator':
+                    if (gameState.inventory.includes('电梯钥匙')) {
+                        showMessage(`
+                            <p class="success">电梯启动！你成功逃脱了。</p>
+                            <button onclick="location.href='wenzimishi.html'" class="return-btn">
+                                返回主菜单
+                            </button>
+                        `, false);
+                    } else {
+                        showMessage("电梯需要钥匙才能启动");
+                    }
+                    break;
+            }
+        }
+
+        // 显示齿轮墙提示
+        function showGearWallHint() {
+            const clues = document.getElementById('dynamic-clues');
+            clues.innerHTML += `
+                <p>齿轮上有三种符号：</p>
+                <ul>
+                    <li>三角形（▲▼）</li>
+                    <li>圆形（◯●）</li>
+                    <li>方形（■□）</li>
+                </ul>
+                <p>尝试取下齿轮检查内部...</p>
+            `;
+        }
+
+        // 显示按钮面板
+        function showButtonPanel() {
+            const puzzle = document.getElementById('puzzle-interface');
+            puzzle.innerHTML = `
+                <div class="puzzle-input">
+                    <h4>输入3位密码：</h4>
+                    <div>
+                        <button onclick="pressButton(1)">1</button>
+                        <button onclick="pressButton(2)">2</button>
+                        <button onclick="pressButton(3)">3</button>
+                        <button onclick="pressButton(4)">4</button>
+                        <button onclick="pressButton(5)">5</button>
+                    </div>
+                    <div>
+                        <button onclick="pressButton(6)">6</button>
+                        <button onclick="pressButton(7)">7</button>
+                        <button onclick="pressButton(8)">8</button>
+                        <button onclick="pressButton(9)">9</button>
+                        <button onclick="pressButton(0)">0</button>
+                    </div>
+                    <p>当前输入：<span id="button-sequence"></span></p>
+                    <button onclick="checkCode()">确认</button>
+                    <button onclick="resetCode()">重置</button>
+                    <button onclick="exitPuzzle()" class="return-btn">返回</button>
+                </div>
+            `;
+        }
+
+        // 按钮输入处理
+        let currentCode = [];
+        function pressButton(num) {
+            if (currentCode.length < 3) {
+                currentCode.push(num);
+                document.getElementById('button-sequence').textContent = currentCode.join(' ');
+            }
+        }
+
+        function resetCode() {
+            currentCode = [];
+            document.getElementById('button-sequence').textContent = '';
+        }
+
+        function exitPuzzle() {
+            document.getElementById('puzzle-interface').innerHTML = '';
+        }
+
+        // 检查密码
+        function checkCode() {
+            if (currentCode.join('') === '719') { // 25(2+5=7) + 10(1+0=1) + 18(1+8=9)
+                gameState.inventory.push('电梯钥匙');
+                updateInventory();
+                showMessage(`
+                    <p class="success">控制台解锁！获得电梯钥匙。</p>
+                    <p>现在可以操作电梯了。</p>
+                `);
+                exitPuzzle();
+                
+                // 显示电梯
+                if (!gameState.nodes['elevator'].shown) {
+                    gameState.nodes['elevator'].shown = true;
+                    addNodeToDiagram('elevator');
+                    renderConnectors();
+                }
+            } else {
+                showMessage("密码错误！请检查齿轮的二进制转换");
+            }
+            resetCode();
+        }
+
+        // 显示消息
+        function showMessage(msg, append = true) {
+            const clues = document.getElementById('dynamic-clues');
+            if (append) {
+                const div = document.createElement('div');
+                div.innerHTML = msg;
+                clues.appendChild(div);
+            } else {
+                clues.innerHTML = msg;
+            }
+            clues.scrollTop = clues.scrollHeight;
+        }
+
+        // 更新背包
+        function updateInventory() {
+            const inventory = document.getElementById('inventory-items');
+            inventory.innerHTML = '';
+            gameState.inventory.forEach(item => {
+                const el = document.createElement('div');
+                el.textContent = item;
+                inventory.appendChild(el);
+            });
+        }
+
+        // 启动游戏
+        window.onload = initGame;
+    </script>
+</body>
+</html>
