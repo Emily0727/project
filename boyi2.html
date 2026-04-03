@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FORTUNE'S GAMBLE • 命运赌局</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auction-house {
+            max-width: 1400px;
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .auction-header {
+            background: #ffffff;
+            padding: 25px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 3px solid #c6a15b;
+            position: relative;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-icon {
+            font-size: 52px;
+            color: #c6a15b;
+        }
+
+        .logo-text h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px;
+            font-weight: 900;
+            color: #2c2c2c;
+            letter-spacing: 1px;
+        }
+
+        .logo-text p {
+            color: #888888;
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .lang-switch {
+            display: flex;
+            gap: 8px;
+            background: #f8f8f8;
+            padding: 8px 16px;
+            border-radius: 40px;
+            border: 2px solid #c6a15b;
+        }
+
+        .lang-btn {
+            padding: 6px 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+            background: transparent;
+            border: none;
+            color: #888888;
+        }
+
+        .lang-btn.active {
+            background: #c6a15b;
+            color: white;
+        }
+
+        .lang-btn:hover:not(.active) {
+            background: #f0e0c0;
+            color: #c6a15b;
+        }
+
+        .day-badge {
+            background: #f8f8f8;
+            border: 2px solid #c6a15b;
+            border-radius: 60px;
+            padding: 12px 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .day-badge small {
+            color: #666666;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .day-badge .round-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 800;
+            color: #c6a15b;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            padding: 30px 40px;
+            background: #fafafa;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            padding: 20px;
+            text-align: center;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            border: 1px solid #f0f0f0;
+        }
+
+        .stat-icon {
+            font-size: 28px;
+            color: #c6a15b;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #888888;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 800;
+            color: #2c2c2c;
+        }
+
+        .stat-note {
+            color: #aaaaaa;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+
+        .instructions-panel {
+            background: #fafafa;
+            margin: 0 40px 30px 40px;
+            padding: 25px 30px;
+            border-radius: 20px;
+            border-left: 8px solid #c6a15b;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .info-icon {
+            font-size: 48px;
+            color: #c6a15b;
+        }
+
+        .info-text {
+            flex: 1;
+        }
+
+        .info-text h3 {
+            font-family: 'Playfair Display', serif;
+            color: #2c2c2c;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .info-text p {
+            color: #666666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .rule-tags {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .rule-tag {
+            background: #ffffff;
+            padding: 5px 16px;
+            border-radius: 30px;
+            color: #c6a15b;
+            font-size: 12px;
+            font-weight: 600;
+            border: 2px solid #c6a15b;
+        }
+
+        .round-tracker {
+            margin: 0 40px 20px 40px;
+        }
+
+        .tracker-header {
+            display: flex;
+            justify-content: space-between;
+            color: #888888;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            display: flex;
+            gap: 12px;
+        }
+
+        .progress-bar .segment {
+            height: 8px;
+            flex: 1;
+            background: #e8e8e8;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .progress-bar .segment.active {
+            background: #c6a15b;
+            box-shadow: 0 0 15px rgba(198, 161, 91, 0.3);
+        }
+
+        .progress-bar .segment.completed {
+            background: #2c2c2c;
+        }
+
+        .main-content {
+            padding: 0 40px 40px 40px;
+        }
+
+        .treasure-card {
+            background: #ffffff;
+            border: 1px solid #eaeaea;
+            border-radius: 28px;
+            padding: 35px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.1);
+        }
+
+        .treasure-header {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        .treasure-icon {
+            font-size: 72px;
+            background: #fafafa;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            border: 3px solid #c6a15b;
+        }
+
+        .treasure-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 42px;
+            font-weight: 800;
+            color: #2c2c2c;
+        }
+
+        .treasure-description {
+            font-size: 17px;
+            color: #666666;
+            line-height: 1.7;
+            margin-bottom: 25px;
+            padding: 20px 25px;
+            background: #fafafa;
+            border-radius: 16px;
+            border-left: 5px solid #c6a15b;
+            font-style: italic;
+        }
+
+        .history-box {
+            background: #f8f8f8;
+            padding: 20px 25px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            border: 2px dashed #c6a15b;
+        }
+
+        .history-label {
+            color: #c6a15b;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .history-quote {
+            font-family: 'Playfair Display', serif;
+            color: #2c2c2c;
+            font-size: 18px;
+            font-style: italic;
+            margin-bottom: 10px;
+        }
+
+        .history-range {
+            color: #888888;
+            font-size: 14px;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 12px;
+            margin-top: 12px;
+        }
+
+        .entry-fee {
+            background: #f8f8f8;
+            border-radius: 12px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 2px solid #c6a15b;
+        }
+
+        .entry-fee-label {
+            color: #888888;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .entry-fee-amount {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 800;
+            color: #c6a15b;
+        }
+
+        .current-bid-panel {
+            background: #f8f8f8;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .current-bid-label {
+            color: #888888;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .current-bid-amount {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: #c6a15b;
+        }
+
+        .bidding-area {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .bid-input {
+            flex: 2;
+            min-width: 250px;
+            padding: 18px 22px;
+            background: #ffffff;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            color: #2c2c2c;
+            font-size: 18px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .bid-input:focus {
+            outline: none;
+            border-color: #c6a15b;
+            box-shadow: 0 0 0 4px rgba(198, 161, 91, 0.1);
+        }
+
+        .bid-input.error {
+            border-color: #dc3545;
+            animation: shake 0.3s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .bid-button {
+            flex: 1;
+            padding: 18px 30px;
+            background: #c6a15b;
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(198, 161, 91, 0.2);
+        }
+
+        .bid-button:hover:not(:disabled) {
+            background: #d4b37a;
+            transform: translateY(-2px);
+        }
+
+        .bid-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .fold-button {
+            flex: 0.5;
+            padding: 18px 20px;
+            background: transparent;
+            border: 2px solid #cccccc;
+            border-radius: 12px;
+            color: #888888;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .fold-button:hover:not(:disabled) {
+            border-color: #c6a15b;
+            color: #c6a15b;
+        }
+
+        .fold-button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .npc-dialog {
+            background: #f8f8f8;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-left: 8px solid #c6a15b;
+        }
+
+        .npc-avatar {
+            font-size: 40px;
+            background: #ffffff;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 2px solid #c6a15b;
+        }
+
+        .npc-message {
+            color: #2c2c2c;
+            font-size: 18px;
+        }
+
+        .result-box {
+            background: #f8f8f8;
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 25px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .value-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #ffffff;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .value-label {
+            color: #888888;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .value-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: #2c2c2c;
+        }
+
+        .profit-display {
+            text-align: center;
+            padding: 18px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 22px;
+        }
+
+        .profit-positive {
+            background: rgba(46, 204, 113, 0.05);
+            color: #27ae60;
+            border: 2px solid #27ae60;
+        }
+
+        .profit-negative {
+            background: rgba(231, 76, 60, 0.05);
+            color: #e74c3c;
+            border: 2px solid #e74c3c;
+        }
+
+        .next-btn {
+            width: 100%;
+            padding: 18px;
+            background: #c6a15b;
+            border: none;
+            border-radius: 12px;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 25px;
+        }
+
+        .next-btn:hover {
+            background: #d4b37a;
+        }
+
+        .log-panel {
+            background: #fafafa;
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 30px;
+            border: 1px solid #eaeaea;
+        }
+
+        .log-header {
+            color: #2c2c2c;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            border-bottom: 2px solid #c6a15b;
+            padding-bottom: 10px;
+        }
+
+        .log-entries {
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid #eaeaea;
+            color: #666666;
+            font-size: 13px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .error-msg {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(231, 76, 60, 0.05);
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .game-over {
+            text-align: center;
+            padding: 60px;
+        }
+
+        .game-over h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 56px;
+            margin-bottom: 20px;
+        }
+
+        .game-over p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            color: #666666;
+        }
+
+        .game-over .victory {
+            color: #27ae60;
+        }
+
+        .game-over .defeat {
+            color: #e74c3c;
+        }
+
+        .restart-btn {
+            padding: 18px 45px;
+            background: #c6a15b;
+            border: none;
+            border-radius: 50px;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .restart-btn:hover {
+            background: #d4b37a;
+        }
+
+        @media (max-width: 1000px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                padding: 20px;
+            }
+            
+            .treasure-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .bidding-area {
+                flex-direction: column;
+            }
+            
+            .auction-header {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="auction-house" id="gameContainer">
+        <div class="auction-header">
+            <div class="logo-area">
+                <div class="logo-icon">💎</div>
+                <div class="logo-text">
+                    <h1 id="gameTitle">FORTUNE'S GAMBLE</h1>
+                    <p id="gameSubtitle">THE FINAL AUCTION</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="lang-switch">
+                    <button class="lang-btn active" onclick="switchLanguage('en')">EN</button>
+                    <button class="lang-btn" onclick="switchLanguage('zh')">中文</button>
+                </div>
+                <div class="day-badge">
+                    <small id="roundLabel">ROUND</small>
+                    <span class="round-number" id="roundDisplay">1</span>
+                    <small id="ofLabel">OF 5</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-label" id="goldLabel">YOUR GOLD</div>
+                <div class="stat-value" id="goldDisplay">10,000</div>
+                <div class="stat-note" id="goldNote">available funds</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-label" id="wealthLabel">TOTAL WEALTH</div>
+                <div class="stat-value" id="wealthDisplay">10,000</div>
+                <div class="stat-note" id="wealthNote">including treasures</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💎</div>
+                <div class="stat-label" id="treasuresLabel">TREASURES</div>
+                <div class="stat-value" id="treasuresDisplay">0</div>
+                <div class="stat-note" id="treasuresNote">collected</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-label" id="successLabel">SUCCESS</div>
+                <div class="stat-value" id="winRateDisplay">0%</div>
+                <div class="stat-note" id="successNote">bids won</div>
+            </div>
+        </div>
+
+        <div class="instructions-panel">
+            <div class="info-icon">📜</div>
+            <div class="info-text">
+                <h3 id="storyTitle">THE STORY</h3>
+                <p id="storyText">Your lost love awaits in the afterlife. The legendary <strong style="color:#c6a15b;">Heart of the Eternity</strong> can bring them back, but it appears only on the final round. Each bid costs an entry fee. Win wisely. Save them.</p>
+                <div class="rule-tags">
+                    <span class="rule-tag" id="rule1">ENTRY FEE: 10% of bid</span>
+                    <span class="rule-tag" id="rule2">MAX PROFIT: 30%</span>
+                    <span class="rule-tag" id="rule3"><30% → NPC +30%</span>
+                    <span class="rule-tag" id="rule4">30-49% → NPC +15%</span>
+                    <span class="rule-tag" id="rule5">50-69% → 30% BLUFF</span>
+                    <span class="rule-tag" id="rule6">≥70% → INSTANT WIN</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="round-tracker">
+            <div class="tracker-header">
+                <span id="roundTrackerLabel">AUCTION ROUND</span>
+                <span id="finalGoalLabel">FINAL GOAL: SAVE YOUR LOVE</span>
+            </div>
+            <div class="progress-bar" id="roundProgress">
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+                <div class="segment"></div>
+            </div>
+        </div>
+
+        <div class="main-content" id="mainContent"></div>
+
+        <div class="log-panel">
+            <div class="log-header">
+                <span>📋</span> <span id="logTitle">AUCTION REGISTER</span>
+            </div>
+            <div class="log-entries" id="gameLog">
+                <div class="log-entry"><span>💎</span> <span id="welcomeMsg">Welcome to Fortune's Gamble. The Heart of the Eternity awaits...</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Language data
+        const lang = {
+            en: {
+                gameTitle: "FORTUNE'S GAMBLE",
+                gameSubtitle: "THE FINAL AUCTION",
+                goldLabel: "YOUR GOLD",
+                goldNote: "available funds",
+                wealthLabel: "TOTAL WEALTH",
+                wealthNote: "including treasures",
+                treasuresLabel: "TREASURES",
+                treasuresNote: "collected",
+                successLabel: "SUCCESS",
+                successNote: "bids won",
+                storyTitle: "THE STORY",
+                storyText: "Your lost love awaits in the afterlife. The legendary Heart of the Eternity can bring them back, but it appears only on the final round. Each bid costs an entry fee. Win wisely. Save them.",
+                rule1: "ENTRY FEE: 10% of bid",
+                rule2: "MAX PROFIT: 30%",
+                rule3: "<30% → NPC +30%",
+                rule4: "30-49% → NPC +15%",
+                rule5: "50-69% → 30% BLUFF",
+                rule6: "≥70% → INSTANT WIN",
+                roundTrackerLabel: "AUCTION ROUND",
+                finalGoalLabel: "FINAL GOAL: SAVE YOUR LOVE",
+                roundLabel: "ROUND",
+                ofLabel: "OF 5",
+                logTitle: "AUCTION REGISTER",
+                welcomeMsg: "Welcome to Fortune's Gamble. The Heart of the Eternity awaits...",
+                bidButton: "PLACE BID",
+                passButton: "PASS",
+                nextButton: "NEXT ROUND",
+                entryFee: "ENTRY FEE",
+                currentBid: "CURRENT HIGH BID",
+                historyLabel: "AUCTION HISTORY",
+                win: "WIN",
+                loss: "LOSS",
+                victory: "🏆 VICTORY! 🏆",
+                victoryMsg: "The Heart of the Eternity pulses in your hands. As you hold it, a warm light fills the room. Your lost love appears before you, eyes wide with wonder. 'You came back for me,' they whisper. The heavens have given you back the one thing they could never replace.",
+                tragedy: "💔 TRAGEDY 💔",
+                tragedyMsg: "The Heart of the Eternity slips through your fingers, fading into the void. Your love's face fades from memory. You walk away with gold in your pockets but emptiness in your heart. Some treasures cannot be bought.",
+                playAgain: "SAIL AGAIN"
+            },
+            zh: {
+                gameTitle: "命运赌局",
+                gameSubtitle: "终极拍卖",
+                goldLabel: "持有资金",
+                goldNote: "可用资金",
+                wealthLabel: "总资产",
+                wealthNote: "含宝物价值",
+                treasuresLabel: "宝物数量",
+                treasuresNote: "已收集",
+                successLabel: "成功率",
+                successNote: "竞拍获胜",
+                storyTitle: "故事背景",
+                storyText: "你心爱之人正在彼岸等待。传说中的永恒之心能让他们起死回生，但它只在最后一轮出现。每次出价需支付入场费。明智竞拍，拯救挚爱。",
+                rule1: "入场费: 出价的10%",
+                rule2: "最大利润: 30%",
+                rule3: "<30% → NPC +30%",
+                rule4: "30-49% → NPC +15%",
+                rule5: "50-69% → 30% 诈唬概率",
+                rule6: "≥70% → 立即获胜",
+                roundTrackerLabel: "拍卖轮次",
+                finalGoalLabel: "最终目标: 拯救挚爱",
+                roundLabel: "第",
+                ofLabel: "轮 / 共5轮",
+                logTitle: "拍卖记录",
+                welcomeMsg: "欢迎来到命运赌局。永恒之心正在等待...",
+                bidButton: "出价",
+                passButton: "放弃",
+                nextButton: "下一轮",
+                entryFee: "入场费",
+                currentBid: "当前最高价",
+                historyLabel: "拍卖历史",
+                win: "获胜",
+                loss: "损失",
+                victory: "🏆 胜利！ 🏆",
+                victoryMsg: "永恒之心在你手中跳动。温暖的光芒充满整个房间。你心爱之人出现在你面前，眼中充满惊喜。'你回来找我了，' 他们轻声说道。上天将永远无法替代的珍宝还给了你。",
+                tragedy: "💔 悲剧 💔",
+                tragedyMsg: "永恒之心从你指间滑落，消失在虚空之中。爱人的面容从记忆中淡去。你带着满袋黄金离开，心中却空无一物。有些珍宝，无法用金钱衡量。",
+                playAgain: "再次启航"
+            }
+        };
+
+        let currentLang = 'en';
+
+        function switchLanguage(langCode) {
+            currentLang = langCode;
+            const t = lang[langCode];
+            
+            // Update UI text
+            document.getElementById('gameTitle').textContent = t.gameTitle;
+            document.getElementById('gameSubtitle').textContent = t.gameSubtitle;
+            document.getElementById('goldLabel').textContent = t.goldLabel;
+            document.getElementById('goldNote').textContent = t.goldNote;
+            document.getElementById('wealthLabel').textContent = t.wealthLabel;
+            document.getElementById('wealthNote').textContent = t.wealthNote;
+            document.getElementById('treasuresLabel').textContent = t.treasuresLabel;
+            document.getElementById('treasuresNote').textContent = t.treasuresNote;
+            document.getElementById('successLabel').textContent = t.successLabel;
+            document.getElementById('successNote').textContent = t.successNote;
+            document.getElementById('storyTitle').textContent = t.storyTitle;
+            document.getElementById('storyText').innerHTML = t.storyText.replace('Heart of the Eternity', '<strong style="color:#c6a15b;">永恒之心</strong>');
+            document.getElementById('rule1').textContent = t.rule1;
+            document.getElementById('rule2').textContent = t.rule2;
+            document.getElementById('rule3').textContent = t.rule3;
+            document.getElementById('rule4').textContent = t.rule4;
+            document.getElementById('rule5').textContent = t.rule5;
+            document.getElementById('rule6').textContent = t.rule6;
+            document.getElementById('roundTrackerLabel').textContent = t.roundTrackerLabel;
+            document.getElementById('finalGoalLabel').textContent = t.finalGoalLabel;
+            document.getElementById('roundLabel').textContent = t.roundLabel;
+            document.getElementById('ofLabel').textContent = t.ofLabel;
+            document.getElementById('logTitle').textContent = t.logTitle;
+            document.getElementById('welcomeMsg').textContent = t.welcomeMsg;
+            
+            // Update buttons if they exist
+            const bidBtn = document.getElementById('bidButton');
+            const foldBtn = document.getElementById('foldButton');
+            if (bidBtn) bidBtn.textContent = t.bidButton;
+            if (foldBtn) foldBtn.textContent = t.passButton;
+            
+            // Update language button active state
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if ((langCode === 'en' && btn.textContent === 'EN') || 
+                    (langCode === 'zh' && btn.textContent === '中文')) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        // Luxury treasures (super expensive)
+        const regularTreasures = [
+            { name: "The Golden Chalice", icon: "🏆", description: "A solid gold chalice encrusted with rubies, said to be from the lost temple of El Dorado.", history: "Last sold at Christie's for 850,000 gold. Provenance: Spanish Royal Family.", range: "750,000 - 950,000 gold", minValue: 750000, maxValue: 950000 },
+            { name: "Crown of the Deep", icon: "👑", description: "An ancient crown forged from kraken bone and set with abyssal pearls.", history: "Only three known to exist. One sold for 620,000 gold.", range: "580,000 - 780,000 gold", minValue: 580000, maxValue: 780000 },
+            { name: "Moonlight Scepter", icon: "🔱", description: "A scepter that glows under moonlight, rumored to control the tides.", history: "Royal collectors pay 500,000-700,000 gold for such artifacts.", range: "500,000 - 700,000 gold", minValue: 500000, maxValue: 700000 },
+            { name: "Phoenix Feather Brooch", icon: "🪶", description: "A brooch containing a single phoenix feather, still warm to the touch.", history: "Last auction: 920,000 gold. The feather never burns.", range: "850,000 - 1,050,000 gold", minValue: 850000, maxValue: 1050000 },
+            { name: "Obsidian Dragon Eye", icon: "🐉", description: "A flawless black opal the size of a fist, carved to resemble a dragon's eye.", history: "Gem collectors bid up to 1,200,000 gold for similar pieces.", range: "1,000,000 - 1,400,000 gold", minValue: 1000000, maxValue: 1400000 },
+            { name: "The Eternal Hourglass", icon: "⏳", description: "An hourglass where the sand flows upward, defying time itself.", history: "Scholars believe it's worth 2,000,000+ gold. Authenticity debated.", range: "1,500,000 - 2,500,000 gold", minValue: 1500000, maxValue: 2500000 },
+            { name: "Starfall Diamond", icon: "⭐", description: "A diamond said to have fallen from the heavens. Flawless. Enormous.", history: "Royal treasuries have offered 3,000,000 gold. Never sold.", range: "2,500,000 - 3,500,000 gold", minValue: 2500000, maxValue: 3500000 },
+            { name: "Neptune's Trident", icon: "🔱", description: "A ceremonial trident that can summon storms when wielded.", history: "Naval powers would pay anything for this. Last known: 4,200,000 gold.", range: "3,800,000 - 4,800,000 gold", minValue: 3800000, maxValue: 4800000 },
+            { name: "Soulstone of the First Pirate", icon: "💀", description: "A crystal containing the essence of the legendary Pirate King.", history: "Priceless. Pirates have died for this. Literally.", range: "5,000,000 - 7,000,000 gold", minValue: 5000000, maxValue: 7000000 },
+            { name: "The World's Compass", icon: "🧭", description: "A compass that points to whatever you desire most.", history: "Desire is infinite. So is its price.", range: "6,000,000 - 10,000,000 gold", minValue: 6000000, maxValue: 10000000 }
+        ];
+
+        // Final treasure - Heart of the Eternity (extremely expensive)
+        const finalTreasure = {
+            name: "Heart of the Eternity",
+            icon: "💎",
+            description: "A pulsating crystal that glows with eternal life. Legend says it can bring back the dead. Your love waits for this moment.",
+            history: "Legends speak of its power. Only one exists. The price is everything you have.",
+            range: "Unknown - worth your entire fortune",
+            minValue: 8000000,
+            maxValue: 15000000
+        };
+
+        const npcNames = ["Lord Blackwood", "Madame Calypso", "The Shadow Merchant", "Lady Seraphina", "The Crimson Baron", "Empress of Tides"];
+
+        const gameState = {
+            round: 0,
+            gold: 10000000,  // 10 million starting gold
+            totalWealth: 10000000,
+            treasures: [],
+            currentTreasure: null,
+            currentBid: 0,
+            roundActive: true,
+            wins: 0,
+            totalBids: 0,
+            errorMessage: null,
+            gameOver: false,
+            finalRound: false,
+            finalTreasureValue: 0
+        };
+
+        const elements = {
+            goldDisplay: document.getElementById('goldDisplay'),
+            wealthDisplay: document.getElementById('wealthDisplay'),
+            treasuresDisplay: document.getElementById('treasuresDisplay'),
+            winRateDisplay: document.getElementById('winRateDisplay'),
+            roundDisplay: document.getElementById('roundDisplay'),
+            roundProgress: document.getElementById('roundProgress'),
+            mainContent: document.getElementById('mainContent'),
+            gameLog: document.getElementById('gameLog')
+        };
+
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            }
+            if (num >= 1000) {
+                return (num / 1000).toFixed(0) + 'K';
+            }
+            return num.toString();
+        }
+
+        function getRandomTreasure() {
+            if (gameState.round === 5 && !gameState.finalRound) {
+                gameState.finalRound = true;
+                const finalValue = Math.floor(Math.random() * (finalTreasure.maxValue - finalTreasure.minValue + 1)) + finalTreasure.minValue;
+                gameState.finalTreasureValue = finalValue;
+                return { ...finalTreasure, actualValue: finalValue, isFinal: true };
+            }
+            const template = regularTreasures[Math.floor(Math.random() * regularTreasures.length)];
+            const actualValue = Math.floor(Math.random() * (template.maxValue - template.minValue + 1)) + template.minValue;
+            return { ...template, actualValue: actualValue, isFinal: false };
+        }
+
+        function initGame() {
+            gameState.round = 0;
+            gameState.gold = 10000000;
+            gameState.totalWealth = 10000000;
+            gameState.treasures = [];
+            gameState.wins = 0;
+            gameState.totalBids = 0;
+            gameState.errorMessage = null;
+            gameState.gameOver = false;
+            gameState.finalRound = false;
+            updateUI();
+            startNewRound();
+        }
+
+        function startNewRound() {
+            if (gameState.gameOver) return;
+            
+            if (gameState.round >= 5) {
+                checkFinalVictory();
+                return;
+            }
+
+            gameState.round++;
+            gameState.roundActive = true;
+            gameState.currentBid = 0;
+            gameState.errorMessage = null;
+
+            const treasure = getRandomTreasure();
+            const entryFee = Math.ceil(treasure.actualValue * 0.1);
+            
+            gameState.currentTreasure = {
+                ...treasure,
+                entryFee: entryFee,
+                id: Date.now() + Math.random()
+            };
+
+            renderTreasure();
+            updateUI();
+            updateRoundProgress();
+            logMessage(`Round ${gameState.round}: ${gameState.currentTreasure.name} appears. Entry fee: ${formatNumber(gameState.currentTreasure.entryFee)} gold.`, 'info');
+        }
+
+        function renderTreasure() {
+            const t = gameState.currentTreasure;
+            const isFinal = t.isFinal;
+            const langText = lang[currentLang];
+            const errorHtml = gameState.errorMessage ? 
+                `<div class="error-msg"><span>⚠️</span> ${gameState.errorMessage}</div>` : '';
+            
+            elements.mainContent.innerHTML = `
+                <div class="treasure-card">
+                    <div class="treasure-header">
+                        <div class="treasure-icon">${t.icon}</div>
+                        <h2 class="treasure-name">${t.name}</h2>
+                    </div>
+                    
+                    <div class="treasure-description">
+                        "${t.description}"
+                    </div>
+                    
+                    <div class="history-box">
+                        <div class="history-label">${langText.historyLabel}</div>
+                        <div class="history-quote">"${t.history}"</div>
+                        <div class="history-range">💰 ${t.range}</div>
+                    </div>
+                    
+                    <div class="entry-fee">
+                        <span class="entry-fee-label">⚜️ ${langText.entryFee}</span>
+                        <span class="entry-fee-amount">${formatNumber(t.entryFee)} gold</span>
+                    </div>
+                    
+                    <div class="current-bid-panel">
+                        <span class="current-bid-label">${langText.currentBid}</span>
+                        <span class="current-bid-amount" id="currentBidDisplay">${formatNumber(gameState.currentBid)} ⚜️</span>
+                    </div>
+                    
+                    <div class="bidding-area">
+                        <input type="number" class="bid-input" id="bidAmount" 
+                               placeholder="Your bid" min="1" value="${Math.floor(t.actualValue * 0.3)}">
+                        <button class="bid-button" onclick="submitBid()" id="bidButton">${langText.bidButton}</button>
+                        <button class="fold-button" onclick="concedeBid()" id="foldButton">${langText.passButton}</button>
+                    </div>
+                    
+                    ${errorHtml}
+                    
+                    <div id="npcDialog" style="display: none;" class="npc-dialog">
+                        <div class="npc-avatar">🏴‍☠️</div>
+                        <div class="npc-message" id="npcMessage"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function calculateCounterBid(currentBid, actualValue, basePercentage) {
+            const closeness = (currentBid / actualValue) * 100;
+            
+            let increment;
+            if (closeness < 30) {
+                increment = Math.floor(currentBid * (basePercentage / 100));
+            } else if (closeness < 50) {
+                increment = Math.floor(currentBid * (basePercentage * 0.7 / 100));
+            } else if (closeness < 70) {
+                increment = Math.floor(currentBid * (basePercentage * 0.4 / 100));
+            } else {
+                increment = Math.floor(currentBid * 0.05);
+            }
+            
+            const counterBid = currentBid + Math.max(increment, 1000);
+            const maxBid = Math.floor(actualValue * 1.5);
+            return Math.min(counterBid, maxBid);
+        }
+
+        window.submitBid = function() {
+            if (!gameState.roundActive || gameState.gameOver) return;
+            
+            const bidInput = document.getElementById('bidAmount');
+            const bid = parseInt(bidInput.value);
+            const langText = lang[currentLang];
+            
+            gameState.errorMessage = null;
+            
+            if (isNaN(bid) || bid < 1) {
+                gameState.errorMessage = "Please enter a valid bid amount";
+                showError();
+                return;
+            }
+            
+            const totalCost = gameState.currentTreasure.entryFee + bid;
+            if (totalCost > gameState.gold) {
+                gameState.errorMessage = `You need ${formatNumber(totalCost)} gold (${formatNumber(gameState.currentTreasure.entryFee)} entry + ${formatNumber(bid)} bid) - you have ${formatNumber(gameState.gold)}`;
+                showError();
+                return;
+            }
+
+            if (bid <= gameState.currentBid) {
+                gameState.errorMessage = `Bid must be higher than ${formatNumber(gameState.currentBid)} gold`;
+                showError();
+                return;
+            }
+
+            gameState.gold -= gameState.currentTreasure.entryFee;
+            
+            gameState.totalBids++;
+            const treasure = gameState.currentTreasure;
+            const actualValue = treasure.actualValue;
+            const bidPercentage = (bid / actualValue) * 100;
+            
+            const randomNPC = npcNames[Math.floor(Math.random() * npcNames.length)];
+            
+            if (bidPercentage < 30) {
+                const counterBid = calculateCounterBid(bid, actualValue, 30);
+                gameState.currentBid = counterBid;
+                showNPCMessage(`${randomNPC} counters with ${formatNumber(counterBid)} gold!`);
+                logMessage(`${randomNPC} counters: ${formatNumber(counterBid)} gold`, 'npc');
+                
+            } else if (bidPercentage >= 30 && bidPercentage < 50) {
+                const counterBid = calculateCounterBid(bid, actualValue, 15);
+                gameState.currentBid = counterBid;
+                showNPCMessage(`${randomNPC} raises to ${formatNumber(counterBid)} gold!`);
+                logMessage(`${randomNPC} raises: ${formatNumber(counterBid)} gold`, 'npc');
+                
+            } else if (bidPercentage >= 50 && bidPercentage < 70) {
+                const bluffChance = Math.random() < 0.3;
+                
+                if (bluffChance) {
+                    processWin(bid, actualValue, true);
+                } else {
+                    const counterBid = calculateCounterBid(bid, actualValue, 10);
+                    gameState.currentBid = counterBid;
+                    showNPCMessage(`${randomNPC} pushes to ${formatNumber(counterBid)} gold...`);
+                    logMessage(`${randomNPC} counters: ${formatNumber(counterBid)} gold`, 'npc');
+                }
+                
+            } else {
+                processWin(bid, actualValue, false);
+            }
+            
+            updateUI();
+            updateBidDisplay();
+        };
+
+        function processWin(bid, actualValue, isBluff) {
+            gameState.gold -= bid;
+            
+            const rawProfit = actualValue - bid;
+            const maxProfit = Math.floor(actualValue * 0.3);
+            const profit = Math.min(rawProfit, maxProfit);
+            
+            // Add treasure and immediately sell for actual value
+            gameState.treasures.push({
+                name: gameState.currentTreasure.name,
+                icon: gameState.currentTreasure.icon,
+                paid: bid,
+                actualValue: actualValue,
+                profit: profit,
+                isFinal: gameState.currentTreasure.isFinal || false
+            });
+            
+            // Auto-sell at actual value
+            gameState.gold += actualValue;
+            gameState.totalWealth = gameState.gold;
+            
+            gameState.wins++;
+            
+            const profitClass = profit >= 0 ? 'profit-positive' : 'profit-negative';
+            const profitSign = profit >= 0 ? '+' : '';
+            
+            const langText = lang[currentLang];
+            
+            const resultHTML = `
+                <div class="result-box">
+                    <div class="value-row">
+                        <span class="value-label">YOUR BID</span>
+                        <span class="value-number">${formatNumber(bid)} ⚜️</span>
+                    </div>
+                    <div class="value-row">
+                        <span class="value-label">ENTRY FEE</span>
+                        <span class="value-number">${formatNumber(gameState.currentTreasure.entryFee)} ⚜️ (REFUNDED)</span>
+                    </div>
+                    <div class="value-row">
+                        <span class="value-label">APPRAISED VALUE</span>
+                        <span class="value-number">${formatNumber(actualValue)} ⚜️</span>
+                    </div>
+                    <div class="value-row">
+                        <span class="value-label">SOLD FOR</span>
+                        <span class="value-number">${formatNumber(actualValue)} ⚜️</span>
+                    </div>
+                    <div class="profit-display ${profitClass}">
+                        ${profitSign}${formatNumber(profit)} gold ${isBluff ? '(BLUFF BONUS!)' : ''}
+                    </div>
+                </div>
+            `;
+            
+            document.querySelector('.treasure-card').insertAdjacentHTML('beforeend', resultHTML);
+            
+            if (isBluff) {
+                showNPCMessage(`SOLD! They were bluffing. Lucky you.`);
+                logMessage(`BLUFF! Won for ${formatNumber(bid)} gold`, 'win');
+            } else {
+                showNPCMessage(`SOLD! Round ${gameState.round} closed.`);
+                logMessage(`Won! Paid: ${formatNumber(bid)}, Sold: ${formatNumber(actualValue)}`, 'win');
+            }
+            
+            logMessage(`Profit: ${profitSign}${formatNumber(profit)} gold`, 'profit');
+            
+            gameState.roundActive = false;
+            document.getElementById('bidButton').disabled = true;
+            document.getElementById('foldButton').disabled = true;
+            
+            if (gameState.round >= 5) {
+                showNextButton("VIEW RESULT");
+            } else {
+                showNextButton(lang[currentLang].nextButton);
+            }
+        }
+
+        window.concedeBid = function() {
+            if (!gameState.roundActive || gameState.gameOver) return;
+            
+            const treasure = gameState.currentTreasure;
+            
+            const resultHTML = `
+                <div class="result-box">
+                    <div class="value-row">
+                        <span class="value-label">ENTRY FEE LOST</span>
+                        <span class="value-number">${formatNumber(treasure.entryFee)} ⚜️</span>
+                    </div>
+                    <div class="value-row">
+                        <span class="value-label">APPRAISED VALUE</span>
+                        <span class="value-number">${formatNumber(treasure.actualValue)} ⚜️</span>
+                    </div>
+                    <div style="text-align: center; color: #e74c3c; padding: 15px; font-weight: 600;">
+                        💀 LOT PASSED - ENTRY FEE FORFEITED 💀
+                    </div>
+                </div>
+            `;
+            
+            document.querySelector('.treasure-card').insertAdjacentHTML('beforeend', resultHTML);
+            
+            showNPCMessage(`Round ${gameState.round} withdrawn. You lost ${formatNumber(treasure.entryFee)} gold.`);
+            logMessage(`Passed. Lost ${formatNumber(treasure.entryFee)} gold entry fee. Worth ${formatNumber(treasure.actualValue)} gold`, 'fold');
+            
+            gameState.roundActive = false;
+            document.getElementById('bidButton').disabled = true;
+            document.getElementById('foldButton').disabled = true;
+            
+            if (gameState.round >= 5) {
+                showNextButton("VIEW RESULT");
+            } else {
+                showNextButton(lang[currentLang].nextButton);
+            }
+        };
+
+        function showError() {
+            const bidInput = document.getElementById('bidAmount');
+            bidInput.classList.add('error');
+            setTimeout(() => bidInput.classList.remove('error'), 500);
+            renderTreasure();
+        }
+
+        function showNPCMessage(message) {
+            const dialog = document.getElementById('npcDialog');
+            const messageEl = document.getElementById('npcMessage');
+            if (dialog && messageEl) {
+                dialog.style.display = 'flex';
+                messageEl.textContent = message;
+            }
+        }
+
+        function updateBidDisplay() {
+            const display = document.getElementById('currentBidDisplay');
+            if (display) {
+                display.textContent = formatNumber(gameState.currentBid) + ' ⚜️';
+            }
+        }
+
+        function showNextButton(text) {
+            const button = document.createElement('button');
+            button.className = 'next-btn';
+            button.textContent = `💎 ${text} 💎`;
+            button.onclick = () => {
+                if (gameState.round >= 5) {
+                    checkFinalVictory();
+                } else {
+                    startNewRound();
+                }
+                button.remove();
+            };
+            elements.mainContent.appendChild(button);
+        }
+
+        function checkFinalVictory() {
+            const hasHeart = gameState.treasures.some(t => t.isFinal);
+            const langText = lang[currentLang];
+            
+            if (hasHeart) {
+                showGameOver(langText.victory, langText.victoryMsg);
+            } else {
+                showGameOver(langText.tragedy, langText.tragedyMsg);
+            }
+        }
+
+        function showGameOver(title, message) {
+            gameState.gameOver = true;
+            const langText = lang[currentLang];
+            elements.mainContent.innerHTML = `
+                <div class="game-over">
+                    <h2 style="color: ${title.includes('VICTORY') ? '#27ae60' : '#e74c3c'}">${title}</h2>
+                    <p>${message}</p>
+                    <p style="font-size: 48px; color: #c6a15b; margin: 20px 0;">${formatNumber(gameState.gold)} gold</p>
+                    <p style="color: #888888; margin-bottom: 30px;">Treasures collected: ${gameState.treasures.length}</p>
+                    <button class="restart-btn" onclick="location.reload()">${langText.playAgain}</button>
+                </div>
+            `;
+        }
+
+        function updateRoundProgress() {
+            const segments = elements.roundProgress.children;
+            for (let i = 0; i < segments.length; i++) {
+                segments[i].className = 'segment';
+                if (i < gameState.round - 1) {
+                    segments[i].classList.add('completed');
+                } else if (i === gameState.round - 1) {
+                    segments[i].classList.add('active');
+                }
+            }
+            
+            elements.roundDisplay.textContent = gameState.round;
+        }
+
+        function updateUI() {
+            elements.goldDisplay.textContent = formatNumber(gameState.gold);
+            elements.wealthDisplay.textContent = formatNumber(gameState.gold);
+            elements.treasuresDisplay.textContent = gameState.treasures.length;
+            
+            const winRate = gameState.totalBids > 0 ? 
+                Math.round((gameState.wins / gameState.totalBids) * 100) : 0;
+            elements.winRateDisplay.textContent = winRate + '%';
+        }
+
+        function logMessage(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            let icon = '💎';
+            if (type === 'win') icon = '🏆';
+            else if (type === 'npc') icon = '🏴‍☠️';
+            else if (type === 'profit') icon = '💰';
+            else if (type === 'fold') icon = '⚡';
+            
+            entry.innerHTML = `<span>${icon}</span> ${message}`;
+            elements.gameLog.appendChild(entry);
+            elements.gameLog.scrollTop = elements.gameLog.scrollHeight;
+            
+            while (elements.gameLog.children.length > 10) {
+                elements.gameLog.removeChild(elements.gameLog.firstChild);
+            }
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
